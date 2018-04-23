@@ -380,7 +380,7 @@ int app_main(int argc, char const * const argv[])
 		numwalls = 0;
 		cursectnum = -1;
 		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
+		key_clear(KEY_SWITCH_3D);
 	}
 	else
 	{
@@ -402,7 +402,7 @@ int app_main(int argc, char const * const argv[])
 	{
 		if (handleevents()) {
 			if (quitevent) {
-				keystatus[1] = 1;
+				key_set(KEY_ESCAPE, 1);
 				quitevent = 0;
 			}
 		}
@@ -423,9 +423,9 @@ int app_main(int argc, char const * const argv[])
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		if (keystatus[1] > 0)
+		if (key_check(KEY_ESCAPE))
 		{
-			keystatus[1] = 0;
+			key_clear(KEY_ESCAPE);
 			begindrawing();	//{{{
 			printext256(0,0,whitecol,blackcol,"Really want to quit?",0);
 			enddrawing();	//}}}
@@ -549,7 +549,7 @@ void editinput(void)
 	if (angvel != 0)          //ang += angvel * constant
 	{                         //ENGINE calculates angvel for you
 		doubvel = synctics;
-		if (keystatus[buildkeys[4]] > 0)  //Lt. shift makes turn velocity 50% faster
+		if (key_check(KEY_RUN))  //Lt. shift makes turn velocity 50% faster
 			doubvel += (synctics>>1);
 		ang += ((angvel*doubvel)>>4);
 		ang = (ang+2048)&2047;
@@ -557,7 +557,7 @@ void editinput(void)
 	if ((vel|svel) != 0)
 	{
 		doubvel = synctics;
-		if (keystatus[buildkeys[4]] > 0)     //Lt. shift doubles forward velocity
+		if (key_check(KEY_RUN))     //Lt. shift doubles forward velocity
 			doubvel += synctics;
 		xvect = 0, yvect = 0;
 		if (vel != 0)
@@ -588,25 +588,25 @@ void editinput(void)
 		if (goalz < hiz+(16<<8))   //ceiling&floor too close
 			goalz = ((loz+hiz)>>1);
 		goalz += mousz;
-		if (keystatus[buildkeys[8]] > 0)                            //A (stand high)
+		if (key_check(KEY_STAND_HIGH))                            //A (stand high)
 		{
 			if (keystatus[0x1d] > 0)
-				horiz = max(-100,horiz-((keystatus[buildkeys[4]]+1)*synctics*2));
+				horiz = max(-100,horiz-((key_check(KEY_RUN)+1)*synctics*2));
 			else
 			{
 				goalz -= (16<<8);
-				if (keystatus[buildkeys[4]] > 0)    //Either shift key
+				if (key_check(KEY_RUN))    //Either shift key
 					goalz -= (24<<8);
 			}
 		}
-		if (keystatus[buildkeys[9]] > 0)                            //Z (stand low)
+		if (key_check(KEY_STAND_LOW))                            //Z (stand low)
 		{
 			if (keystatus[0x1d] > 0)
-				horiz = min(300,horiz+((keystatus[buildkeys[4]]+1)*synctics*2));
+				horiz = min(300,horiz+((key_check(KEY_RUN)+1)*synctics*2));
 			else
 			{
 				goalz += (12<<8);
-				if (keystatus[buildkeys[4]] > 0)    //Either shift key
+				if (key_check(KEY_RUN))    //Either shift key
 					goalz += (12<<8);
 			}
 		}
@@ -624,31 +624,31 @@ void editinput(void)
 	else
 	{
 		goalz = posz;
-		if (keystatus[buildkeys[8]] > 0)                            //A
+		if (key_check(KEY_STAND_HIGH))                            //A
 		{
 			if (keystatus[0x1d] > 0) {
-				horiz = max(-100,horiz-((keystatus[buildkeys[4]]+1)*synctics*2));
+				horiz = max(-100,horiz-((key_check(KEY_RUN)+1)*synctics*2));
 			} else {
 				if (zmode != 1)
 					goalz -= (8<<8);
 				else
 				{
 					zlock += (4<<8);
-					keystatus[buildkeys[8]] = 0;
+					key_clear(KEY_STAND_HIGH);
 				}
 			}
 		}
-		if (keystatus[buildkeys[9]] > 0)                            //Z (stand low)
+		if (key_check(KEY_STAND_LOW))                            //Z (stand low)
 		{
 			if (keystatus[0x1d] > 0) {
-				horiz = min(300,horiz+((keystatus[buildkeys[4]]+1)*synctics*2));
+				horiz = min(300,horiz+((key_check(KEY_RUN)+1)*synctics*2));
 			} else {
 				if (zmode != 1)
 					goalz += (8<<8);
 				else if (zlock > 0)
 				{
 					zlock -= (4<<8);
-					keystatus[buildkeys[9]] = 0;
+					key_clear(KEY_STAND_LOW);
 				}
 			}
 		}
@@ -661,10 +661,10 @@ void editinput(void)
 
 		if (goalz != posz)
 		{
-			//if (posz < goalz) hvel += (32<<keystatus[buildkeys[4]]);
-			//if (posz > goalz) hvel -= (32<<keystatus[buildkeys[4]]);
-			if (posz < goalz) hvel = ((synctics* 192)<<keystatus[buildkeys[4]]);
-			if (posz > goalz) hvel = ((synctics*-192)<<keystatus[buildkeys[4]]);
+			//if (posz < goalz) hvel += (32<<key_check(KEY_RUN));
+			//if (posz > goalz) hvel -= (32<<key_check(KEY_RUN));
+			if (posz < goalz) hvel = ((synctics* 192)<<key_check(KEY_RUN));
+			if (posz > goalz) hvel = ((synctics*-192)<<key_check(KEY_RUN));
 
 			posz += hvel;
 
@@ -1078,7 +1078,7 @@ void editinput(void)
 			asksave = 1;
 			keystatus[0xd1] = 0;
 		}
-		if (keystatus[0x0f] > 0)  //TAB
+		if (key_check(KEY_COPY))  //TAB
 		{
 			if (searchstat == 0)
 			{
@@ -1143,7 +1143,7 @@ void editinput(void)
 				tempextra = wall[searchwall].extra;
 			}
 			somethingintab = searchstat;
-			keystatus[0x0f] = 0;
+			key_clear(KEY_COPY);
 		}
 		if (keystatus[0x1c] > 0) //Left ENTER
 		{
@@ -1921,7 +1921,7 @@ void editinput(void)
 			keystatus[0x14] = 0;
 		}
 
-		if (keystatus[0x2] > 0)  // 1 (make 1-way wall)
+		if (key_check(KEY_1WAY))  // 1 (make 1-way wall)
 		{
 			if (searchstat != 3)
 			{
@@ -1941,16 +1941,16 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x2] = 0;
+			key_clear(KEY_1WAY);
 		}
-		if (keystatus[0x3] > 0)  // 2 (bottom wall swapping)
+		if (key_check(KEY_BOTTOM_SWAP))  // 2 (bottom wall swapping)
 		{
 			if (searchstat != 3)
 			{
 				wall[searchwall].cstat ^= 2;
 				asksave = 1;
 			}
-			keystatus[0x3] = 0;
+			key_clear(KEY_BOTTOM_SWAP);
 		}
 		if (keystatus[0x18] > 0)  // O (top/bottom orientation - for doors)
 		{
@@ -2314,10 +2314,10 @@ void editinput(void)
 		}
 
 	}
-	if (keystatus[buildkeys[14]] > 0)  // Enter
+	if (key_check(KEY_SWITCH_3D))  // Enter
 	{
 		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
+		key_clear(KEY_SWITCH_3D);
 	}
 }
 
@@ -2493,7 +2493,7 @@ int gettile(int tilenum)
 			bflushchars();
 
 			j = tilenum;
-			while (keystatus[1] == 0)
+			while (!key_check(KEY_ESCAPE))
 			{
 				if (handleevents()) {
 					if (quitevent) quitevent = 0;
@@ -2667,6 +2667,7 @@ void overheadeditor(void)
 	short hitsect, hitwall, hitsprite;
 	int hitx, hity, hitz;
 	walltype *wal;
+	int modeswitch = 0;
 
 	//qsetmode640480();
 	qsetmodeany(xdim2d,ydim2d);
@@ -2733,8 +2734,8 @@ void overheadeditor(void)
 	circlewall = -1;
 	circlepoints = 7;
 	bstatus = 0;
-	keystatus[buildkeys[14]] = 0;
-	while ((keystatus[buildkeys[14]]>>1) == 0)
+	modeswitch = 0;
+	while (!modeswitch)
 	{
 		if (handleevents()) {
 			if (quitevent) {
@@ -2770,7 +2771,7 @@ void overheadeditor(void)
 		if (angvel != 0)          //ang += angvel * constant
 		{                         //ENGINE calculates angvel for you
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)  //Lt. shift makes turn velocity 50% faster
+			if (key_check(KEY_RUN))  //Lt. shift makes turn velocity 50% faster
 				doubvel += (synctics>>1);
 			ang += ((angvel*doubvel)>>4);
 			ang = (ang+2048)&2047;
@@ -2778,7 +2779,7 @@ void overheadeditor(void)
 		if ((vel|svel) != 0)
 		{
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)     //Lt. shift doubles forward velocity
+			if (key_check(KEY_RUN))     //Lt. shift doubles forward velocity
 				doubvel += synctics;
 			xvect = 0, yvect = 0;
 			if (vel != 0)
@@ -3454,16 +3455,17 @@ void overheadeditor(void)
 			keystatus[0x12] = 0;
 		}
 
-		if (keystatus[0x0f] > 0)  //TAB
+		if (key_check(KEY_SHOW_SECTINFO) || key_check(KEY_SHOW_WALLSPRINFO))  //TAB
 		{
 			clearmidstatbar16();
 
-			if ((keystatus[0x38]|keystatus[0xb8]|keystatus[0x1d]|keystatus[0x9d]) > 0)  //ALT or CTRL
+			if (key_check(KEY_SHOW_WALLSPRINFO))  //ALT or CTRL
 			{
 				if (pointhighlight >= 16384)
 					showspritedata((short)pointhighlight-16384);
 				else if (linehighlight >= 0)
 					showwalldata((short)linehighlight);
+				key_clear(KEY_SHOW_WALLSPRINFO);
 			}
 			else
 			{
@@ -3473,8 +3475,8 @@ void overheadeditor(void)
 						showsectordata((short)i);
 						break;
 					}
+				key_clear(KEY_SHOW_SECTINFO);
 			}
-			keystatus[0x0f] = 0;
 		}
 
 
@@ -3901,8 +3903,8 @@ void overheadeditor(void)
 			posy = mousyplc;
 		}
 
-		if (((keystatus[buildkeys[8]] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
-		if (((keystatus[buildkeys[9]] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
+		if ((key_check(KEY_STAND_HIGH) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
+		if ((key_check(KEY_STAND_LOW) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
 
 		if (keystatus[0x22] > 0)  // G (grid on/off)
 		{
@@ -4849,19 +4851,19 @@ void overheadeditor(void)
 			}
 		}
 
-		if ((keystatus[0x0e] > 0) && (newnumwalls >= numwalls)) //Backspace
+		if (key_check(KEY_DELETE_POINT) && (newnumwalls >= numwalls)) //Backspace
 		{
 			if (newnumwalls > numwalls)
 			{
 				newnumwalls--;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				key_clear(KEY_DELETE_POINT);
 			}
 			if (newnumwalls == numwalls)
 			{
 				newnumwalls = -1;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				key_clear(KEY_DELETE_POINT);
 			}
 		}
 
@@ -5028,11 +5030,11 @@ void overheadeditor(void)
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		if (keystatus[buildkeys[14]] > 0)
+		if (key_check(KEY_SWITCH_3D))
 		{
 			updatesector(posx,posy,&cursectnum);
 			if (cursectnum >= 0)
-				keystatus[buildkeys[14]] = 2;
+				modeswitch = 1;
 			else
 				printmessage16("Arrow must be inside a sector before entering 3D mode.");
 		}
@@ -6807,20 +6809,20 @@ void keytimerstuff(void)
 	if (totalclock == ltotalclock) return;
 	ltotalclock=totalclock;
 
-	if (keystatus[buildkeys[5]] == 0)
+	if (!key_check(KEY_STRAFE))
 	{
-		if (keystatus[buildkeys[2]] > 0) angvel = max(angvel-16,-128);
-		if (keystatus[buildkeys[3]] > 0) angvel = min(angvel+16,127);
+		if (key_check(KEY_TURN_LEFT)) angvel = max(angvel-16,-128);
+		if (key_check(KEY_TURN_RIGHT)) angvel = min(angvel+16,127);
 	}
 	else
 	{
-		if (keystatus[buildkeys[2]] > 0) svel = min(svel+8,127);
-		if (keystatus[buildkeys[3]] > 0) svel = max(svel-8,-128);
+		if (key_check(KEY_TURN_LEFT)) svel = min(svel+8,127);
+		if (key_check(KEY_TURN_RIGHT)) svel = max(svel-8,-128);
 	}
-	if (keystatus[buildkeys[0]] > 0) vel = min(vel+8,127);
-	if (keystatus[buildkeys[1]] > 0) vel = max(vel-8,-128);
-	if (keystatus[buildkeys[12]] > 0) svel = min(svel+8,127);
-	if (keystatus[buildkeys[13]] > 0) svel = max(svel-8,-128);
+	if (key_check(KEY_FORWARD)) vel = min(vel+8,127);
+	if (key_check(KEY_BACKWARD)) vel = max(vel-8,-128);
+	if (key_check(KEY_STRAFE_LEFT)) svel = min(svel+8,127);
+	if (key_check(KEY_STRAFE_RIGHT)) svel = max(svel-8,-128);
 
 	if (angvel < 0) angvel = min(angvel+12,0);
 	if (angvel > 0) angvel = max(angvel-12,0);
@@ -7029,6 +7031,136 @@ void AutoAlignWalls(int nWall0, int ply)
 		if (wall[nWall1].nextwall < 0) break;
 		nWall1 = wall[wall[nWall1].nextwall].point2;
 	}
+}
+
+
+//==========================================
+// Editor function key mapping.
+
+struct keymap_t {
+	unsigned char scan;
+	unsigned short mods;
+	unsigned char opts;
+	const char *configname;
+};
+
+static struct keymap_t keymap[MAX_KEYS] = {
+	{ 0x01, 0, 0, NULL },							// KEY_ESCAPE:      escape
+
+	{ 0xc8, 0, KEYOPT_IGNOREMODS, "keyforward" },		// KEY_FORWARD:		up
+	{ 0xd0, 0, KEYOPT_IGNOREMODS, "keybackward" },		// KEY_BACKWARD:	down
+	{ 0xcb, 0, KEYOPT_IGNOREMODS, "keyturnleft" },		// KEY_TURN_LEFT:	left
+	{ 0xcd, 0, KEYOPT_IGNOREMODS, "keyturnright" },	// KEY_TURN_RIGHT:	right
+	{ 0x2a, 0, 0, "keyrun" },						// KEY_RUN:			lshift
+	{ 0x9d, 0, 0, "keystrafe" },					// KEY_STRAFE:		rctrl
+	{ 0x1e, 0, KEYOPT_IGNOREMODS, "keystandhigh" },	// KEY_STAND_HIGH:  A
+	{ 0x2c, 0, KEYOPT_IGNOREMODS, "keystandlow" },		// KEY_STAND_LOW:	Z
+	{ 0x33, 0, 0, "keystrafeleft" },				// KEY_STRAFE_LEFT:	comma
+	{ 0x34, 0, 0, "keystraferight" },				// KEY_STRAFE_RIGHT: fullstop
+
+	{ 0x9c, 0, 0, "keyswitch3d" },					// KEY_SWITCH_3D:   kpenter
+	{ 0x02, 0, 0, "key1way" },						// KEY_1WAY:		1
+	{ 0x03, 0, 0, "keybottomswap" },				// KEY_BOTTOM_SWAP:	2
+	{ 0x0e, 0, 0, "keydeletepoint" },				// KEY_DELETE_POINT: backspace
+	{ 0x0f, 0, 0, "keycopy" },						// KEY_COPY:		tab (3d mode)
+	{ 0x0f, 0, 0, "keyshowsectinfo" },				// KEY_SHOW_SECTINFO: tab (2d mode)
+	{ 0x0f, KEYMOD_SHIFTS | KEYMOD_CTRLS, KEYOPT_ANYMODS, "keyshowwallsprinfo" }, 	// KEY_SHOW_WALLSPRINFO: (shift/ctrl)+tab (2d mode)
+};
+
+int map_key(int keyid, unsigned char scan, unsigned short mods, unsigned short opts)
+{
+	if (keyid < 0 || keyid >= MAX_KEYS) {
+		buildprintf("map_key: unknown key %d\n", keyid);
+		return 0;
+	}
+	keymap[keyid].scan = scan;
+	keymap[keyid].mods = mods;
+	keymap[keyid].opts = opts;
+	return 1;
+}
+
+int map_key_by_configname(const char *configname, unsigned char scan, unsigned short mods, unsigned short opts)
+{
+	int i;
+	for (i = 0; i < MAX_KEYS; i++) {
+		if (!Bstrcasecmp(keymap[i].configname, configname)) {
+			return map_key(i, scan, mods, opts);
+		}
+	}
+	buildprintf("map_key_by_configname: unknown key %s\n", configname);
+	return 0;
+}
+
+int key_check(int keyid)
+{
+	int mods, modscheck;
+
+	if (keyid < 0 || keyid >= MAX_KEYS || !keymap[keyid].scan) {
+		// Not mapped, or out of range.
+		return 0;
+	}
+
+	// If the base key isn't pressed, there's nothing more to check.
+	if (!keystatus[ keymap[keyid].scan ]) {
+		return 0;
+	}
+
+	if (keymap[keyid].opts & KEYOPT_IGNOREMODS) {
+		// We don't care about the state of any modifiers.
+		return 1;
+	} else {
+		// If modifier keys are individually mapped, add their
+		// equivalent modifier bits to the mapping.
+		mods = keymap[keyid].mods;
+		if (keymap[keyid].scan == 0x2a) mods |= KEYMOD_LSHIFT;
+		else if (keymap[keyid].scan == 0x36) mods |= KEYMOD_RSHIFT;
+		else if (keymap[keyid].scan == 0x38) mods |= KEYMOD_LALT;
+		else if (keymap[keyid].scan == 0xb8) mods |= KEYMOD_RALT;
+		else if (keymap[keyid].scan == 0x1d) mods |= KEYMOD_LCTRL;
+		else if (keymap[keyid].scan == 0x9d) mods |= KEYMOD_RCTRL;
+
+		// Work out the combination of modifiers currently held.
+		modscheck = 0;
+		if (keystatus[0x2a]) modscheck |= KEYMOD_LSHIFT;
+		if (keystatus[0x36]) modscheck |= KEYMOD_RSHIFT;
+		if (keystatus[0x38]) modscheck |= KEYMOD_LALT;
+		if (keystatus[0xb8]) modscheck |= KEYMOD_RALT;
+		if (keystatus[0x1d]) modscheck |= KEYMOD_LCTRL;
+		if (keystatus[0x9d]) modscheck |= KEYMOD_RCTRL;
+	}
+
+	if (mods == modscheck) {
+		// The exact modifiers are pressed.
+		return 1;
+	} else if ((keymap[keyid].opts & KEYOPT_ANYMODS) && (mods & modscheck)) {
+		// At least one of the modifiers from the accepted set is pressed.
+		return 1;
+	}
+
+	// Conditions weren't met.
+	return 0;
+}
+
+int key_clear(int keyid)
+{
+	return key_set(keyid, 0);
+}
+
+// key_set() -- Set or clear the base key of a mapping.
+//   Modifiers of the mapping aren't affected unless the base
+//   key is itself a modifier key.
+int key_set(int keyid, int state)
+{
+	int mapping;
+
+	if (keyid < 0 || keyid >= MAX_KEYS || !keymap[keyid].scan) {
+		// Not mapped, or out of range.
+		return 0;
+	}
+
+	keystatus[keymap[keyid].scan] = state;
+
+	return 1;
 }
 
 

@@ -10,6 +10,53 @@ extern "C" {
 #endif
 
 #define NUMBUILDKEYS 20
+enum {
+    KEY_ESCAPE,
+
+    // Basic movement.
+    KEY_FORWARD,
+    KEY_BACKWARD,
+    KEY_TURN_LEFT,
+    KEY_TURN_RIGHT,
+    KEY_RUN,
+    KEY_STRAFE,
+    KEY_STAND_HIGH,
+    KEY_STAND_LOW,
+    KEY_STRAFE_LEFT,
+    KEY_STRAFE_RIGHT,
+
+    // Editor functionality.
+    KEY_SWITCH_3D,
+    KEY_1WAY,
+    KEY_BOTTOM_SWAP,
+    KEY_DELETE_POINT,
+    KEY_COPY,
+    KEY_SHOW_SECTINFO,
+    KEY_SHOW_WALLSPRINFO,
+
+    MAX_KEYS
+};
+enum {
+    KEYMOD_LSHIFT = 0x0100,
+    KEYMOD_RSHIFT = 0x0200,
+    KEYMOD_LALT   = 0x0400,
+    KEYMOD_RALT   = 0x0800,
+    KEYMOD_LCTRL  = 0x1000,
+    KEYMOD_RCTRL  = 0x2000,
+    KEYMOD_SHIFTS = (KEYMOD_LSHIFT | KEYMOD_RCTRL),
+    KEYMOD_ALTS = (KEYMOD_LALT | KEYMOD_RALT),
+    KEYMOD_CTRLS = (KEYMOD_LCTRL | KEYMOD_RCTRL),
+
+    KEYOPT_IGNOREMODS = 0x80,
+    KEYOPT_ANYMODS = 0x40,
+};
+
+int map_key(int keyid, unsigned char scan, unsigned short mods, unsigned short opts);
+int map_key_by_configname(const char *configname, unsigned char scan, unsigned short mods, unsigned short opts);
+
+int key_check(int keyid);
+int key_clear(int keyid);
+int key_set(int keyid, int state);
 
 extern int qsetmode;
 extern short searchsector, searchwall, searchstat;

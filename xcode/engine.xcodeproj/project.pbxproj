@@ -371,6 +371,7 @@
 		AB735F730A29A3AC003261DC /* src */ = {
 			isa = PBXGroup;
 			children = (
+				AB48BD692088C67C00E38090 /* version.c */,
 				ABA9E3020FEF9D170024231F /* a.h */,
 				ABA9E3030FEF9D170024231F /* kplib.h */,
 				ABA9E3040FEF9D170024231F /* osxbits.h */,
@@ -736,6 +737,7 @@
 				AB735F630A29A39D003261DC /* compat.c in Sources */,
 				AB735F640A29A39D003261DC /* crc32.c in Sources */,
 				AB735F650A29A39D003261DC /* defs.c in Sources */,
+				AB48BD6A2088C67C00E38090 /* version.c in Sources */,
 				AB735F660A29A39D003261DC /* engine.c in Sources */,
 				AB735F670A29A39D003261DC /* glbuild.c in Sources */,
 				AB735F680A29A39D003261DC /* kplib.c in Sources */,
