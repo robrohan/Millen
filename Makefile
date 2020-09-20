@@ -205,7 +205,7 @@ else
 ENGINEOBJS+= $(SRC)/version.$o
 endif
 
-UTILS=kextract$(EXESUFFIX) kgroup$(EXESUFFIX) transpal$(EXESUFFIX) wad2art$(EXESUFFIX) wad2map$(EXESUFFIX) arttool$(EXESUFFIX)
+UTILS=kextract$(EXESUFFIX) kgroup$(EXESUFFIX) transpal$(EXESUFFIX) arttool$(EXESUFFIX)
 BUILDUTILS=generatesdlappicon$(EXESUFFIX) bin2c$(EXESUFFIX)
 
 all: game$(EXESUFFIX) build$(EXESUFFIX)
