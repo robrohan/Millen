@@ -233,6 +233,8 @@ $(GAMEDATA)/game$(EXESUFFIX): $(GAMEEXEOBJS)
 $(GAMEDATA)/build$(EXESUFFIX): $(EDITOREXEOBJS)
 	$(CXX) $(CFLAGS) $(OURCFLAGS) -o $@ $^ $(LIBS)
 
+mkpalette$(EXESUFFIX): $(TOOLS)/mkpalette.$o
+	$(CC) -o $@ $^ -lm
 kextract$(EXESUFFIX): $(TOOLS)/kextract.$o $(ENGINELIB)
 	$(CC) -o $@ $^ $(ENGINELIB)
 kgroup$(EXESUFFIX): $(TOOLS)/kgroup.$o $(ENGINELIB)
