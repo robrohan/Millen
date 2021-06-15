@@ -123,11 +123,15 @@ char option[NUMOPTIONS] = {1, 1, 1, 0, 0, 0, 1, (4 << 4) | 1 | 2 | 4};
 
 int keys[NUMKEYS] = {
     // up    dn     lf      rt   ..    ..     ..     sp
-    KEY_W, KEY_S, KEY_A, KEY_D, 
+    // 0     1      2      3
+    KEY_W, KEY_S, KEY_COMMA, KEY_PEROID,
+    //  4            5          6          7
     KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
     // a     z     pgd   pgu       ,           .
-    KEY_Q, KEY_Z, 0xd1, 0xc9, KEY_COMMA, KEY_PEROID,
+    // 8     9     10    11       12    13
+    KEY_Q, KEY_Z, 0xd1, 0xc9,   KEY_A, KEY_D,
     // ret    ent     =     -    tb       ..
+    //14      15      16   17    18      19  
     0x9c, KEY_ENTER, 0xd, 0xc, KEY_TAB, 0x2b};
 
 int xdimgame = 640, ydimgame = 480, bppgame = 8;
@@ -5155,7 +5159,7 @@ void getinput(void)
 
     if (typemode == 0) // if normal game keys active
     {
-        if (keystatus[keys[15]])
+        if (keystatus[keys[15]])  // Enter, why is this so convoluted?
         {
             keystatus[keys[15]] = 0;
 
@@ -5166,7 +5170,7 @@ void getinput(void)
         }
 
         for (i = 7; i >= 0; i--)
-            if (keystatus[i + 2])
+            if (keystatus[i + 2]) // you hate people don't you
             {
                 keystatus[i + 2] = 0;
                 locselectedgun = i;
@@ -5175,7 +5179,7 @@ void getinput(void)
     }
 
     // KEYTIMERSTUFF
-    if (!keystatus[keys[5]])
+    if (!keystatus[keys[5]]) // right control key?
     {
         if (keystatus[keys[2]])
             avel = max(avel - 16 * TICSPERFRAME, -128);
@@ -5189,13 +5193,15 @@ void getinput(void)
         if (keystatus[keys[3]])
             svel = max(svel - 8 * TICSPERFRAME, -128);
     }
-    if (keystatus[keys[0]])
+
+    // Basic movement
+    if (keystatus[keys[0]])  // forwards
         fvel = min(fvel + 8 * TICSPERFRAME, 127);
-    if (keystatus[keys[1]])
+    if (keystatus[keys[1]]) // backwards
         fvel = max(fvel - 8 * TICSPERFRAME, -128);
-    if (keystatus[keys[12]])
+    if (keystatus[keys[12]]) // Strafe left
         svel = min(svel + 8 * TICSPERFRAME, 127);
-    if (keystatus[keys[13]])
+    if (keystatus[keys[13]])  // Strafe right
         svel = max(svel - 8 * TICSPERFRAME, -128);
 
     if (avel < 0)
@@ -5213,7 +5219,7 @@ void getinput(void)
 
     if ((option[4] == 0) && (numplayers >= 2))
     {
-        if (!keystatus[0x4f])
+        if (!keystatus[0x4f]) // key pad 1 :-/
         {
             if (keystatus[0x4b])
                 avel2 = max(avel2 - 16 * TICSPERFRAME, -128);
@@ -5246,10 +5252,11 @@ void getinput(void)
             fvel2 = max(fvel2 - 2 * TICSPERFRAME, 0);
     }
 
+    // rotate the camera about the z axis
     oscreentilt = screentilt;
-    if (keystatus[0x1a])
+    if (keystatus[0x1a]) // open brace
         screentilt += ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
-    if (keystatus[0x1b])
+    if (keystatus[0x1b]) // close brace
         screentilt -= ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
 
     i = (TICSPERFRAME << 1);
@@ -5267,6 +5274,7 @@ void getinput(void)
 
     getmousevalues(&mousx, &mousy, &bstatus);
     loc.avel = min(max(loc.avel + (mousx << 3), -128), 127);
+    // Stop moving via the mouse :-/ who thought that was ever a good idea?
     // loc.fvel = min(max(loc.fvel-(mousy<<3),-128),127);
 
     loc.bits = (locselectedgun << 13);
@@ -5282,7 +5290,7 @@ void getinput(void)
     loc.bits |= (keystatus[keys[4]] << 8);                       // Run
     loc.bits |= (keystatus[keys[10]] << 2);                      // Look up
     loc.bits |= (keystatus[keys[11]] << 3);                      // Look down
-    loc.bits |= ((keystatus[keys[7]] == 1) << 10);               // Space
+    loc.bits |= ((keystatus[keys[7]] == 1) << 10);               // Space (Use Key)
     loc.bits |= ((keystatus[keys[6]] == 1) << 11);               // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
     loc.bits |= (((bstatus & 1) > (oldmousebstatus & 1)) << 11); // Shoot
@@ -5318,6 +5326,7 @@ void getinput(void)
     */
     if (keystatus[0x2f]) // V
     {
+        // 3rd person view
         keystatus[0x2f] = 0;
         if (cameradist < 0)
             cameradist = 0;
