@@ -14,7 +14,7 @@ The second half has documentation about every BUILD engine function, what it
 Documentation on Ken's .ART file format                     by Ken Silverman
 
    I am documenting my ART format to allow you to program your own custom
-art utilites if you so desire.  I am still planning on writing the script
+art utilities if you so desire.  I am still planning on writing the script
 system.
 
    All art files must have xxxxx###.ART.  When loading an art file you
@@ -690,7 +690,7 @@ rotatepoint(long xpivot, long ypivot, long x, long y,
 
        Input:   1. Pivot point     (xpivot,ypivot)
                 2. Original point  (x,y)
-                3. Angle to rotate (0 = nothing, 512 = 90ø CW, etc.)
+                3. Angle to rotate (0 = nothing, 512 = 90ï¿½ CW, etc.)
        Output:  4. Rotated point   (*x2,*y2)
 
 lastwall(short point);
