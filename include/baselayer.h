@@ -5,6 +5,8 @@
 #ifndef __baselayer_h__
 #define __baselayer_h__
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif

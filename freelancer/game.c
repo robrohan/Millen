@@ -12,6 +12,7 @@
 #include "names.h"
 #include "osd.h"
 #include "pragmas.h"
+#include "keys.h"
 
 #include "baselayer.h"
 
@@ -112,13 +113,23 @@ static int fvel, svel, avel;
 static int fvel2, svel2, avel2;
 
 char option[NUMOPTIONS] = {1, 1, 1, 0, 0, 0, 1, (4 << 4) | 1 | 2 | 4};
+// int keys[NUMKEYS] = {
+//     // up  dn   lf   rt   ..   ..   ..   ..    sp
+//     0xc8, 0xd0, 0xcb, 0xcd, 0x2a, 0x9d, 0x1d, 0x39,
+//     // a     z   ..   pgu   ,    .
+//     0x1e, 0x2c, 0xd1, 0xc9, 0x33, 0x34,
+//     // ret  ent  =   -   tb  ..
+//     0x9c, 0x1c, 0xd, 0xc, 0xf, 0x2b};
+
 int keys[NUMKEYS] = {
-    // up  dn   lf   rt   ..   ..   ..   sp
-    0xc8, 0xd0, 0xcb, 0xcd, 0x2a, 0x9d, 0x1d, 0x39,
-    // a     z   ..   pgu   ,    .
-    0x1e, 0x2c, 0xd1, 0xc9, 0x33, 0x34,
-    // ret  ent  =   -   tb  ..
-    0x9c, 0x1c, 0xd, 0xc, 0xf, 0x2b};
+    // up    dn     lf      rt   ..    ..     ..     sp
+    KEY_W, KEY_S, KEY_A, KEY_D, 
+    KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
+    // a     z     pgd   pgu       ,           .
+    KEY_Q, KEY_Z, 0xd1, 0xc9, KEY_COMMA, KEY_PEROID,
+    // ret    ent     =     -    tb       ..
+    0x9c, KEY_ENTER, 0xd, 0xc, KEY_TAB, 0x2b};
+
 int xdimgame = 640, ydimgame = 480, bppgame = 8;
 int forcesetup = 1;
 
@@ -551,7 +562,7 @@ int app_main(int argc, char const *const argv[])
         // the global support files directory
         if (supportdir)
         {
-            Bsnprintf(dirpath, sizeof(dirpath), "%s/KenBuild", supportdir);
+            Bsnprintf(dirpath, sizeof(dirpath), "%s/Freelancer", supportdir);
             addsearchpath(dirpath);
             free(supportdir);
         }
@@ -579,9 +590,9 @@ int app_main(int argc, char const *const argv[])
             Bsnprintf(dirpath, sizeof(dirpath),
                       "%s/"
 #if defined(_WIN32) || defined(__APPLE__)
-                      "KenBuild"
+                      "Freelancer"
 #else
-                      ".kenbuild"
+                      ".freelancer"
 #endif
                       ,
                       supportdir);
@@ -612,7 +623,7 @@ int app_main(int argc, char const *const argv[])
                          osdcmd_vidmode);
     OSD_RegisterFunction("map", "map [filename]: load a map", osdcmd_map);
 
-    wm_setapptitle("KenBuild by Ken Silverman");
+    wm_setapptitle("Freelancer");
 
     Bstrcpy(boardfilename, "nukeland.map");
     for (i = 1; i < argc; i++)
@@ -760,7 +771,7 @@ int app_main(int argc, char const *const argv[])
         tiletovox[PLAYER] = nextvoxid++;
     if (!qloadkvx(nextvoxid, "voxel001.kvx"))
         tiletovox[BROWNMONSTER] = nextvoxid++;
-    if (!loaddefinitionsfile("kenbuild.def"))
+    if (!loaddefinitionsfile("freelancer.def"))
         buildputs("Definitions file loaded.\n");
 
     // Here's an example of TRUE ornamented walls

@@ -1,7 +1,7 @@
 #import <Cocoa/Cocoa.h>
 
-#include "baselayer.h"
 #include "build.h"
+#include "baselayer.h"
 #include "game.h"
 
 #include <stdlib.h>
@@ -59,8 +59,7 @@
 
 - (BOOL)windowShouldClose:(id)sender
 {
-    if (inmodal)
-    {
+    if (inmodal) {
         [NSApp stopModalWithCode:STARTWIN_CANCEL];
     }
     quitevent = quitevent || quiteventonclose;
@@ -72,16 +71,10 @@
     int retval;
 
     inmodal = YES;
-    switch ([NSApp runModalForWindow:[self window]])
-    {
-    case STARTWIN_RUN:
-        retval = STARTWIN_RUN;
-        break;
-    case STARTWIN_CANCEL:
-        retval = STARTWIN_CANCEL;
-        break;
-    default:
-        retval = -1;
+    switch ([NSApp runModalForWindow:[self window]]) {
+        case STARTWIN_RUN: retval = STARTWIN_RUN; break;
+        case STARTWIN_CANCEL: retval = STARTWIN_CANCEL; break;
+        default: retval = -1;
     }
     inmodal = NO;
 
@@ -105,24 +98,21 @@
 #if USE_POLYMOST && USE_OPENGL
         32, 24, 16, 15,
 #endif
-        8,  0};
+        8, 0
+    };
     NSMenu *menu3d = nil;
     NSMenuItem *menuitem = nil;
 
-    if (firstTime)
-    {
+    if (firstTime) {
         getvalidmodes();
         xdim = settings->xdim3d;
         ydim = settings->ydim3d;
-        bpp = settings->bpp3d;
+        bpp  = settings->bpp3d;
         fullscreen = settings->fullscreen;
-    }
-    else
-    {
+    } else {
         fullscreen = ([fullscreenButton state] == NSOnState);
         mode3d = [[videoMode3DPUButton selectedItem] tag];
-        if (mode3d >= 0)
-        {
+        if (mode3d >= 0) {
             xdim = validmode[mode3d].xdim;
             ydim = validmode[mode3d].ydim;
             bpp = validmode[mode3d].bpp;
@@ -131,20 +121,11 @@
 
     // Find an ideal match.
     mode3d = checkvideomode(&xdim, &ydim, bpp, fullscreen, 1);
-    if (mode3d < 0)
-    {
-        for (i = 0; cd[i];)
-        {
-            if (cd[i] >= bpp)
-                i++;
-            else
-                break;
-        }
-        for (; cd[i]; i++)
-        {
+    if (mode3d < 0) {
+        for (i=0; cd[i]; ) { if (cd[i] >= bpp) i++; else break; }
+        for ( ; cd[i]; i++) {
             mode3d = checkvideomode(&xdim, &ydim, cd[i], fullscreen, 1);
-            if (mode3d < 0)
-                continue;
+            if (mode3d < 0) continue;
             break;
         }
     }
@@ -153,22 +134,18 @@
     menu3d = [videoMode3DPUButton menu];
     [menu3d removeAllItems];
 
-    for (i = 0; i < validmodecnt; i++)
-    {
-        if (validmode[i].fs != fullscreen)
-            continue;
+    for (i = 0; i < validmodecnt; i++) {
+        if (validmode[i].fs != fullscreen) continue;
 
-        if (i == mode3d)
-            idx3d = i;
-        menuitem = [menu3d addItemWithTitle:[NSString stringWithFormat:@"%d %C %d %d-bpp", validmode[i].xdim, 0xd7,
-                                                                       validmode[i].ydim, validmode[i].bpp]
+        if (i == mode3d) idx3d = i;
+        menuitem = [menu3d addItemWithTitle:[NSString stringWithFormat:@"%d %C %d %d-bpp",
+                                          validmode[i].xdim, 0xd7, validmode[i].ydim, validmode[i].bpp]
                                      action:nil
                               keyEquivalent:@""];
         [menuitem setTag:i];
     }
 
-    if (idx3d >= 0)
-        [videoMode3DPUButton selectItemWithTag:idx3d];
+    if (idx3d >= 0) [videoMode3DPUButton selectItemWithTag:idx3d];
 }
 
 - (IBAction)fullscreenClicked:(id)sender
@@ -190,8 +167,7 @@
 
 - (IBAction)cancel:(id)sender
 {
-    if (inmodal)
-    {
+    if (inmodal) {
         [NSApp stopModalWithCode:STARTWIN_CANCEL];
     }
     quitevent = quitevent || quiteventonclose;
@@ -202,8 +178,7 @@
     int mode = -1;
 
     mode = [[videoMode3DPUButton selectedItem] tag];
-    if (mode >= 0)
-    {
+    if (mode >= 0) {
         settings->xdim3d = validmode[mode].xdim;
         settings->ydim3d = validmode[mode].ydim;
         settings->bpp3d = validmode[mode].bpp;
@@ -212,41 +187,34 @@
 
     settings->numplayers = 0;
     settings->joinhost = NULL;
-    if ([singlePlayerButton state] == NSOnState)
-    {
+    if ([singlePlayerButton state] == NSOnState) {
         settings->numplayers = 1;
-    }
-    else if ([joinMultiButton state] == NSOnState)
-    {
+    } else if ([joinMultiButton state] == NSOnState) {
         NSString *host = [hostField stringValue];
         settings->numplayers = 2;
         settings->joinhost = strdup([host cStringUsingEncoding:NSUTF8StringEncoding]);
-    }
-    else if ([hostMultiButton state] == NSOnState)
-    {
+    } else if ([hostMultiButton state] == NSOnState) {
         settings->numplayers = [numPlayersField intValue];
     }
 
     settings->forcesetup = [alwaysShowButton state] == NSOnState;
 
-    if (inmodal)
-    {
+    if (inmodal) {
         [NSApp stopModalWithCode:STARTWIN_RUN];
     }
 }
 
 - (void)setupConfigMode
 {
-    [alwaysShowButton setState:(settings->forcesetup ? NSOnState : NSOffState)];
+    [alwaysShowButton setState: (settings->forcesetup ? NSOnState : NSOffState)];
     [alwaysShowButton setEnabled:YES];
 
     [videoMode3DPUButton setEnabled:YES];
     [self populateVideoModes:YES];
     [fullscreenButton setEnabled:YES];
-    [fullscreenButton setState:(settings->fullscreen ? NSOnState : NSOffState)];
+    [fullscreenButton setState: (settings->fullscreen ? NSOnState : NSOffState)];
 
-    if (!settings->netoverride)
-    {
+    if (!settings->netoverride) {
         [singlePlayerButton setEnabled:YES];
         [singlePlayerButton setState:NSOnState];
 
@@ -260,9 +228,7 @@
         [joinMultiButton setEnabled:YES];
         [joinMultiButton setState:NSOffState];
         [hostField setEnabled:NO];
-    }
-    else
-    {
+    } else {
         [singlePlayerButton setEnabled:NO];
         [hostMultiButton setEnabled:NO];
         [numPlayersField setEnabled:NO];
@@ -275,7 +241,7 @@
     [startButton setEnabled:YES];
 
     [tabView selectTabViewItem:tabConfig];
-    [NSCursor unhide]; // Why should I need to do this?
+    [NSCursor unhide];  // Why should I need to do this?
 }
 
 - (void)setupMessagesMode:(BOOL)allowCancel
@@ -285,8 +251,7 @@
     // disable all the controls on the Configuration page
     NSEnumerator *enumerator = [[[tabConfig view] subviews] objectEnumerator];
     NSControl *control;
-    while (control = [enumerator nextObject])
-    {
+    while (control = [enumerator nextObject]) {
         [control setEnabled:false];
     }
 
@@ -311,8 +276,7 @@
     [messagesView replaceCharactersInRange:end withString:str];
     [text endEditing];
 
-    if (shouldAutoScroll)
-    {
+    if (shouldAutoScroll) {
         end.location = [text length];
         end.length = 0;
         [messagesView scrollRangeToVisible:end];
@@ -335,16 +299,13 @@ static StartupWinController *startwin = nil;
 
 int startwin_open(void)
 {
-    if (startwin != nil)
-        return 1;
+    if (startwin != nil) return 1;
 
-    @autoreleasepool
-    {
+    @autoreleasepool {
         startwin = [[StartupWinController alloc] initWithWindowNibName:@"startwin.game"];
-        if (startwin == nil)
-            return -1;
+        if (startwin == nil) return -1;
 
-        [startwin window]; // Forces the window controls on the controller to be initialised.
+        [startwin window];  // Forces the window controls on the controller to be initialised.
         [startwin setupMessagesMode:YES];
         [startwin showWindow:nil];
 
@@ -354,11 +315,9 @@ int startwin_open(void)
 
 int startwin_close(void)
 {
-    if (startwin == nil)
-        return 1;
+    if (startwin == nil) return 1;
 
-    @autoreleasepool
-    {
+    @autoreleasepool {
         [startwin closeQuietly];
         [startwin release];
         startwin = nil;
@@ -369,13 +328,10 @@ int startwin_close(void)
 
 int startwin_puts(const char *s)
 {
-    if (!s)
-        return -1;
-    if (startwin == nil)
-        return 1;
+    if (!s) return -1;
+    if (startwin == nil) return 1;
 
-    @autoreleasepool
-    {
+    @autoreleasepool {
         [startwin putsMessage:[NSString stringWithUTF8String:s]];
 
         return 0;
@@ -384,13 +340,10 @@ int startwin_puts(const char *s)
 
 int startwin_settitle(const char *s)
 {
-    if (!s)
-        return -1;
-    if (startwin == nil)
-        return 1;
+    if (!s) return -1;
+    if (startwin == nil) return 1;
 
-    @autoreleasepool
-    {
+    @autoreleasepool {
         [startwin setTitle:[NSString stringWithUTF8String:s]];
 
         return 0;
@@ -406,16 +359,14 @@ int startwin_run(struct startwin_settings *settings)
 {
     int retval;
 
-    if (startwin == nil)
-        return 0;
+    if (startwin == nil) return 0;
 
-    @autoreleasepool
-    {
+    @autoreleasepool {
         [startwin setSettings:settings];
 
         [startwin setupConfigMode];
         retval = [startwin modalRun];
-        [startwin setupMessagesMode:(settings->numplayers > 1)];
+        [startwin setupMessagesMode: (settings->numplayers > 1)];
 
         return retval;
     }

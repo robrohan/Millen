@@ -32,7 +32,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 1
     CONTROL         "", IDC_STARTWIN_TABCTL, WC_TABCONTROL, WS_TABSTOP | WS_CLIPSIBLINGS, 87, 7, 257, 180, WS_EX_LEFT | WS_EX_CONTROLPARENT
     AUTOCHECKBOX    "&Always show configuration on start", IDC_ALWAYSSHOW, 12, 202, 140, 8, WS_TABSTOP, WS_EX_LEFT
     CONTROL         IDB_BMP, IDC_STATIC, WC_STATIC, SS_BITMAP, 22, 7, 43, 39, WS_EX_LEFT
-    CTEXT           "KenBuild", IDC_STATIC, 12, 52, 65, 15, SS_CENTER, WS_EX_LEFT
+    CTEXT           "Freelancer", IDC_STATIC, 12, 52, 65, 15, SS_CENTER, WS_EX_LEFT
 }
 
 
@@ -93,12 +93,12 @@ FILESUBTYPE VFT2_UNKNOWN
     {
         BLOCK "080904e4"
         {
-            VALUE "CompanyName", "http://jonof.id.au"
-            VALUE "FileDescription", "KenBuild"
+            VALUE "CompanyName", "http://robrohan.com"
+            VALUE "FileDescription", "Freelancer"
             VALUE "FileVersion", __DATE__ " " __TIME__
             VALUE "InternalName", "game.exe"
             VALUE "OriginalFilename", "game.exe"
-            VALUE "ProductName", "Build engine by Ken Silverman"
+            VALUE "ProductName", "Freelancer on Build engine by Ken Silverman"
             VALUE "ProductVersion", __DATE__ " " __TIME__
             VALUE "LegalCopyright", "See BUILDLIC.TXT for terms"
         }

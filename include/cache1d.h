@@ -3,6 +3,8 @@
 #ifndef __cache1d_h__
 #define __cache1d_h__
 
+#include "compat.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

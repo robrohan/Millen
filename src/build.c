@@ -10,6 +10,7 @@
 #include "osd.h"
 #include "cache1d.h"
 #include "editor.h"
+#include "keys.h"
 
 #include "baselayer.h"
 #ifdef RENDERTYPEWIN
@@ -26,11 +27,21 @@ static char kensig[24];
 
 int vel, svel, angvel;
 
+// int buildkeys[NUMBUILDKEYS] =
+// {
+// 	0xc8,0xd0,0xcb,0xcd,0x2a,0x9d,0x1d,0x39,
+// 	0x1e,0x2c,0xd1,0xc9,0x33,0x34,
+// 	0x9c,0x1c,0xd,0xc,0xf,0x45
+// };
+
 int buildkeys[NUMBUILDKEYS] =
 {
-	0xc8,0xd0,0xcb,0xcd,0x2a,0x9d,0x1d,0x39,
-	0x1e,0x2c,0xd1,0xc9,0x33,0x34,
-	0x9c,0x1c,0xd,0xc,0xf,0x45
+	// Movement.
+	KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
+	// Modifiers?
+	KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
+	KEY_A, KEY_Z, KEY_PG_DOWN, KEY_PG_UP, KEY_COMMA, KEY_PEROID,
+	KEY_RETURN_KP_ENTER, KEY_ENTER, KEY_PLUS, KEY_MINUS, KEY_TAB, KEY_NUMLOCK
 };
 
 int posx, posy, posz, horiz = 100;
