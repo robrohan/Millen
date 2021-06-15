@@ -1,7 +1,7 @@
 DEF Language Documentation
 ==========================
 
-The JFBuild engine provides a customisation facility which allows for enhancements to be
+The JFBuild engine provides a customization facility which allows for enhancements to be
 made to games that use it without requiring the game itself be modified. These
 enhancements include high-resolution textures and 3D models in OpenGL mode. The file that
 contains the declarations of these enhancements is different for each game. In KenBuild

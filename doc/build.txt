@@ -21,7 +21,7 @@ BUILD programmed by Ken Silverman
        1/2 = Select weapon
 Left-Shift = Run
          T = Reset Timing (sets totalclock = 0)
-         V = Change visibility.  In BUILD.H there is a visiblity variable.
+         V = Change visibility.  In BUILD.H there is a visibility variable.
              It is initialized to 13.  It can range from around 8 (darker)
              to about 15 (lighter).
          P = Change parallaxing sky mode. (0, 1, and 2 (Default = 2)
@@ -131,14 +131,14 @@ Shift +
                right, just press 'O' anyway to see if it get fixed.
 
 COPY & PASTE
-         TAB = COPY. Copy the attibutes of the highlighted objects into a
+         TAB = COPY. Copy the attributes of the highlighted objects into a
                temporary place.  The attributes it remembers are:
                tile, shade, x-repeat, y-repeat, and cstat values.
   Left ENTER = PASTE. Paste the stored attributes over the highlighted
                object.  Whenever you press ENTER, the y-repeat values stay
                the same, and the x-repeat values are adjusted so the pixels
                of the bitmaps have a square-aspect ratio.
-Ctrl+L.ENTER = Left ENTER with the ctrl key will paste the attribtues to
+Ctrl+L.ENTER = Left ENTER with the ctrl key will paste the attributes to
                 every wall in a loop (if a wall is highlighted).
 Shft+L.ENTER = Left ENTER with the shift key also pressed copies the shade
                only.
@@ -178,7 +178,7 @@ WALL FLAGS:
                right below the window.  You can block either the front or
                the back of the window.  If you block the back only, you
                will be able to go onto the window sill.
-           T = Press to make a maskable wall 50/50 transluscent.  Press T
+           T = Press to make a maskable wall 50/50 translucent.  Press T
                again to put the masked wall back to normal mode.
            M = Make a maskable wall.  Press in the same place you press 'B'.
                The masking wall takes all its attributes from the front of
@@ -187,7 +187,7 @@ WALL FLAGS:
                The masking picture number is stored in overpicnum.  Also,
                the masking walls is also automatically added the the other
                side of the wall, with the picture flipped.  (see the 'F'
-               key descripte above)
+               key described above)
    Shift + M = Make a maskable wall just like 'M' described above, but only
                on the front side.
 
@@ -213,7 +213,7 @@ SPRITE FLAGS:
                block you from walking through.  Also makes the sprite
                sensitive to hitscan.  Sprites with the 'B' attribute will
                appear pink in 2D EDIT MODE
-           T = Press to make a sprite 50/50 transluscent.  Press T again
+           T = Press to make a sprite 50/50 translucent.  Press T again
                to put sprite back to normal mode.
 
 ┌───────────────────────────────────────────────────────────────────────────┐
@@ -230,7 +230,7 @@ SPRITE FLAGS:
                      region of points to highlight, then just drag any of
                      the highlighted points and the rest move with it.
 Right mouse button = Moves the player's positions to the mouse cursor.
-                     This is useful when you accidently get stuck somewhere
+                     This is useful when you accidentally get stuck somewhere
                      in the board, or when you need to edit some part of
                      a sector that is hard to access.
        Right Shift = Select a bunch of points for use with dragging around.
@@ -285,7 +285,7 @@ Right mouse button = Moves the player's positions to the mouse cursor.
             Delete = Use this to delete sprites (blue circles).  To delete
                      points of a sector border, don't press delete.  Instead,
                      drag the point into one of its 2 neighbor points on the
-                     sector.  This is easist done if grid locking is on
+                     sector.  This is easiest done if grid locking is on
                      (mouse cursor is pink).  If 2 neighbor points are equal,
                      one will automatically be deleted.
  Right Ctrl-Delete = This deletes the whole sector that the mouse cursor is
