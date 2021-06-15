@@ -42,6 +42,7 @@
 #include "a.h"
 #include "osd.h"
 #include "glbuild.h"
+#include "keys.h"
 
 #if defined(__APPLE__)
 # include "osxbits.h"
@@ -964,7 +965,7 @@ int setvideomode(int x, int y, int c, int fs)
 
 	shutdownvideo();
 
-	buildprintf("Setting video mode %dx%d (%d-bpp %s)\n", x,y,c,
+	buildprintf("Setting video mode %dx%d (%d-bpp %s) - sdlayer \n", x,y,c,
 		(fs & 1) ? "fullscreen" : "windowed");
 
 	do {
@@ -1443,15 +1444,16 @@ int handleevents(void)
 					break;
 
 				if (ev.key.type == SDL_KEYDOWN) {
+					printf("%#02x %#02x\n", code, keystatus[code]);
 					if (!keystatus[code]) {
 						SetKey(code, 1);
-						if (keypresscallback)
-							keypresscallback(code, 1);
+						// if (keypresscallback)
+						// 	keypresscallback(code, 1);
 					}
 				} else {
 					SetKey(code, 0);
-					if (keypresscallback)
-						keypresscallback(code, 0);
+					// if (keypresscallback)
+					// 	keypresscallback(code, 0);
 				}
 				break;
 
@@ -1547,7 +1549,8 @@ int handleevents(void)
 	return rv;
 }
 
-
+// Make our own custom scancodes. I am not sure why this was done
+// it doesn't make sense to not just use the SDL codes, but...
 static int buildkeytranslationtable(void)
 {
 	memset(keytranslation,0,sizeof(keytranslation));
@@ -1555,33 +1558,37 @@ static int buildkeytranslationtable(void)
 #define MAP(x,y) keytranslation[x].normal = y
 #define MAPC(x,y,c) keytranslation[x].normal = y, keytranslation[x].controlchar = c
 
-	MAPC(SDL_SCANCODE_BACKSPACE, 0xe, 0x8);
-	MAPC(SDL_SCANCODE_TAB,       0xf, 0x9);
-	MAPC(SDL_SCANCODE_RETURN,    0x1c, 0xd);
-	MAP(SDL_SCANCODE_PAUSE,     0x59);  // 0x1d + 0x45 + 0x9d + 0xc5
-	MAPC(SDL_SCANCODE_ESCAPE,    0x1, 0x1b);
-	MAP(SDL_SCANCODE_SPACE,     0x39);
-	MAP(SDL_SCANCODE_APOSTROPHE,     0x28);
-	MAP(SDL_SCANCODE_COMMA,     0x33);
-	MAP(SDL_SCANCODE_MINUS,     0xc);
-	MAP(SDL_SCANCODE_PERIOD,    0x34);
-	MAP(SDL_SCANCODE_SLASH,     0x35);
-	MAP(SDL_SCANCODE_0,     0xb);
-	MAP(SDL_SCANCODE_1,     0x2);
-	MAP(SDL_SCANCODE_2,     0x3);
-	MAP(SDL_SCANCODE_3,     0x4);
-	MAP(SDL_SCANCODE_4,     0x5);
-	MAP(SDL_SCANCODE_5,     0x6);
-	MAP(SDL_SCANCODE_6,     0x7);
-	MAP(SDL_SCANCODE_7,     0x8);
-	MAP(SDL_SCANCODE_8,     0x9);
-	MAP(SDL_SCANCODE_9,     0xa);
-	MAP(SDL_SCANCODE_SEMICOLON, 0x27);
-	MAP(SDL_SCANCODE_EQUALS,    0xd);
+	MAPC(SDL_SCANCODE_BACKSPACE, KEY_BACKSPACE, 0x8);
+	MAP(SDL_SCANCODE_BACKSPACE,  KEY_BACKSPACE); // Testing...
+
+	MAPC(SDL_SCANCODE_TAB,       KEY_TAB, 0x9);
+	MAPC(SDL_SCANCODE_RETURN,    KEY_ENTER, 0xd);
+	MAP(SDL_SCANCODE_PAUSE,      KEY_PAUSE);  // 0x1d + 0x45 + 0x9d + 0xc5
+	MAPC(SDL_SCANCODE_ESCAPE,    KEY_ESCAPE, 0x1b);
+	MAP(SDL_SCANCODE_SPACE,      KEY_SPACE);
+	MAP(SDL_SCANCODE_APOSTROPHE, KEY_QUOTE);
+	MAP(SDL_SCANCODE_COMMA,      KEY_COMMA);
+	MAP(SDL_SCANCODE_MINUS,      KEY_MINUS);
+	MAP(SDL_SCANCODE_PERIOD,     KEY_PEROID);
+	MAP(SDL_SCANCODE_SLASH,      KEY_QUESTION);
+	MAP(SDL_SCANCODE_0,          KEY_ZERO);
+	MAP(SDL_SCANCODE_1,          KEY_ONE);
+	MAP(SDL_SCANCODE_2,          KEY_TWO);
+	MAP(SDL_SCANCODE_3,          KEY_THREE);
+	MAP(SDL_SCANCODE_4,          KEY_FOUR);
+	MAP(SDL_SCANCODE_5,          KEY_FIVE);
+	MAP(SDL_SCANCODE_6,          KEY_SIX);
+	MAP(SDL_SCANCODE_7,          KEY_SEVEN);
+	MAP(SDL_SCANCODE_8,          KEY_EIGHT);
+	MAP(SDL_SCANCODE_9,          KEY_NINE);
+	MAP(SDL_SCANCODE_SEMICOLON,  KEY_COLON);
+	MAP(SDL_SCANCODE_EQUALS,     KEY_PLUS);
+
 	MAPC(SDL_SCANCODE_LEFTBRACKET,   0x1a, 0x1b | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_BACKSLASH, 0x2b, 0x1c | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_RIGHTBRACKET,  0x1b, 0x1d | WITH_CONTROL_KEY);
-	MAP(SDL_SCANCODE_GRAVE, 0x29);
+	
+	MAP(SDL_SCANCODE_GRAVE,      KEY_GRAVE);
 	MAPC(SDL_SCANCODE_A,     0x1e, 0x1 | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_B,     0x30, 0x2 | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_C,     0x2e, 0x3 | WITH_CONTROL_KEY);
@@ -1608,7 +1615,8 @@ static int buildkeytranslationtable(void)
 	MAPC(SDL_SCANCODE_X,     0x2d, 0x18 | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_Y,     0x15, 0x19 | WITH_CONTROL_KEY);
 	MAPC(SDL_SCANCODE_Z,     0x2c, 0x1a | WITH_CONTROL_KEY);
-	MAP(SDL_SCANCODE_DELETE,    0xd3);
+
+	MAP(SDL_SCANCODE_DELETE,     KEY_DELETE);
 	MAP(SDL_SCANCODE_KP_0,       0x52);
 	MAP(SDL_SCANCODE_KP_1,       0x4f);
 	MAP(SDL_SCANCODE_KP_2,       0x50);
@@ -1625,27 +1633,31 @@ static int buildkeytranslationtable(void)
 	MAP(SDL_SCANCODE_KP_MINUS,  0x4a);
 	MAP(SDL_SCANCODE_KP_PLUS,   0x4e);
 	MAPC(SDL_SCANCODE_KP_ENTER,  0x9c, 0xd);
-	MAP(SDL_SCANCODE_UP,        0xc8);
-	MAP(SDL_SCANCODE_DOWN,      0xd0);
-	MAP(SDL_SCANCODE_RIGHT,     0xcd);
-	MAP(SDL_SCANCODE_LEFT,      0xcb);
-	MAP(SDL_SCANCODE_INSERT,    0xd2);
-	MAP(SDL_SCANCODE_HOME,      0xc7);
-	MAP(SDL_SCANCODE_END,       0xcf);
-	MAP(SDL_SCANCODE_PAGEUP,    0xc9);
-	MAP(SDL_SCANCODE_PAGEDOWN,  0xd1);
-	MAP(SDL_SCANCODE_F1,        0x3b);
-	MAP(SDL_SCANCODE_F2,        0x3c);
-	MAP(SDL_SCANCODE_F3,        0x3d);
-	MAP(SDL_SCANCODE_F4,        0x3e);
-	MAP(SDL_SCANCODE_F5,        0x3f);
-	MAP(SDL_SCANCODE_F6,        0x40);
-	MAP(SDL_SCANCODE_F7,        0x41);
-	MAP(SDL_SCANCODE_F8,        0x42);
-	MAP(SDL_SCANCODE_F9,        0x43);
-	MAP(SDL_SCANCODE_F10,       0x44);
-	MAP(SDL_SCANCODE_F11,       0x57);
-	MAP(SDL_SCANCODE_F12,       0x58);
+
+	MAP(SDL_SCANCODE_UP,        KEY_UP);
+	MAP(SDL_SCANCODE_DOWN,      KEY_DOWN);
+	MAP(SDL_SCANCODE_RIGHT,     KEY_RIGHT);
+	MAP(SDL_SCANCODE_LEFT,      KEY_LEFT);
+
+	MAP(SDL_SCANCODE_INSERT,    KEY_INSERT);
+	MAP(SDL_SCANCODE_HOME,      KEY_HOME);
+	MAP(SDL_SCANCODE_END,       KEY_END);
+	MAP(SDL_SCANCODE_PAGEUP,    KEY_PG_UP);
+	MAP(SDL_SCANCODE_PAGEDOWN,  KEY_PG_DOWN);
+
+	MAP(SDL_SCANCODE_F1,        KEY_F1);
+	MAP(SDL_SCANCODE_F2,        KEY_F2);
+	MAP(SDL_SCANCODE_F3,        KEY_F3);
+	MAP(SDL_SCANCODE_F4,        KEY_F4);
+	MAP(SDL_SCANCODE_F5,        KEY_F5);
+	MAP(SDL_SCANCODE_F6,        KEY_F6);
+	MAP(SDL_SCANCODE_F7,        KEY_F7);
+	MAP(SDL_SCANCODE_F8,        KEY_F8);
+	MAP(SDL_SCANCODE_F9,        KEY_F9);
+	MAP(SDL_SCANCODE_F10,       KEY_F10);
+	MAP(SDL_SCANCODE_F11,       KEY_F11);
+	MAP(SDL_SCANCODE_F12,       KEY_F12);
+
 	MAP(SDL_SCANCODE_NUMLOCKCLEAR,   0x45);
 	MAP(SDL_SCANCODE_CAPSLOCK,  0x3a);
 	MAP(SDL_SCANCODE_SCROLLLOCK, 0x46);

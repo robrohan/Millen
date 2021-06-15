@@ -34,14 +34,18 @@ int vel, svel, angvel;
 // 	0x9c,0x1c,0xd,0xc,0xf,0x45
 // };
 
+// These keys are override able. I don't like the way this works
+// and should just do away with it.
 int buildkeys[NUMBUILDKEYS] =
 {
-	// Movement.
+	// 0      1          2         3
 	KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-	// Modifiers?
+	//  4            5           6          7
 	KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
+	// 8     9        10          11         12         13
 	KEY_A, KEY_Z, KEY_PG_DOWN, KEY_PG_UP, KEY_COMMA, KEY_PEROID,
-	KEY_RETURN_KP_ENTER, KEY_ENTER, KEY_PLUS, KEY_MINUS, KEY_TAB, KEY_NUMLOCK
+	// 14      15         16         17       18         19
+	KEY_F2, KEY_ENTER, KEY_PLUS, KEY_MINUS, KEY_TAB, KEY_NUMLOCK
 };
 
 int posx, posy, posz, horiz = 100;
@@ -393,7 +397,8 @@ int app_main(int argc, char const * const argv[])
 		numwalls = 0;
 		cursectnum = -1;
 		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
+		// keystatus[buildkeys[14]] = 0;
+		keystatus[KEY_F2] = 0;
 	}
 	else
 	{
@@ -528,6 +533,17 @@ void editinput(void)
 	short hitsect, hitwall, hitsprite;
 	int hitx, hity, hitz, dax, day, hihit, lohit;
 
+	/////////////////////
+	printf("editinput -> key: %#02x state: %#02x\n", KEY_F2, keystatus[KEY_F2]);
+	if (keystatus[KEY_F2] > 0)  // Enter
+	{
+		buildprintf("Swap editor state...\n");
+		overheadeditor();
+		// keystatus[buildkeys[14]] = 0;
+		keystatus[KEY_F2] = 0;
+	}
+	/////////////////////
+
 	if (keystatus[0x57] > 0)  //F11 - brightness
 	{
 		keystatus[0x57] = 0;
@@ -535,11 +551,11 @@ void editinput(void)
 		if (brightness >= 16) brightness = 0;
 		setbrightness(brightness,palette,0);
 	}
-	if (keystatus[88] > 0)   //F12
-	{
-		screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
-		keystatus[88] = 0;
-	}
+	// if (keystatus[88] > 0)   //F12
+	// {
+	// 	screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
+	// 	keystatus[88] = 0;
+	// }
 
 	mousz = 0;
 	getmousevalues(&mousx,&mousy,&bstatus);
@@ -558,12 +574,12 @@ void editinput(void)
 	if (searchy > ydim-5) searchy = ydim-5;
 	showmouse();
 
-	if (keystatus[0x3b] > 0) posx--;
-	if (keystatus[0x3c] > 0) posx++;
-	if (keystatus[0x3d] > 0) posy--;
-	if (keystatus[0x3e] > 0) posy++;
-	if (keystatus[0x43] > 0) ang--;
-	if (keystatus[0x44] > 0) ang++;
+	// if (keystatus[0x3b] > 0) posx--;  // F1
+	// if (keystatus[0x3c] > 0) posx++;  // F2
+	// if (keystatus[0x3d] > 0) posy--;  // F3
+	// if (keystatus[0x3e] > 0) posy++;  // F4
+	// if (keystatus[0x43] > 0) ang--;   // F9
+	// if (keystatus[0x44] > 0) ang++;   // F10
 
 	if (angvel != 0)          //ang += angvel * constant
 	{                         //ENGINE calculates angvel for you
@@ -593,7 +609,7 @@ void editinput(void)
 	}
 	getzrange(posx,posy,posz,cursectnum,&hiz,&hihit,&loz,&lohit,128L,CLIPMASK0);
 
-	if (keystatus[0x3a] > 0)
+	if (keystatus[0x3a] > 0) // CAPSLOCK
 	{
 		zmode++;
 		if (zmode == 3) zmode = 0;
@@ -699,18 +715,19 @@ void editinput(void)
 	{
 		if ((bstatus&1) > 0)
 			searchit = 0;
-		if (keystatus[0x4a] > 0)  // -
+		// if (keystatus[0x4a] > 0)  // - on the keypad
+		if (keystatus[KEY_MINUS] > 0)  // - on the keypad
 		{
 			keystatus[0x4a] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT (LALT RALT)
 			{
-				if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //CTRL
+				if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //CTRL (LCTL RCTL)
 				{
 					if (visibility < 16384) visibility += visibility;
 				}
 				else
 				{
-					if ((keystatus[0x2a]|keystatus[0x36]) == 0)
+					if ((keystatus[0x2a]|keystatus[0x36]) == 0)  // SHFIT (LSHIFT RSHIFT)
 						k = 16; else k = 1;
 
 					if (highlightsectorcnt >= 0)
@@ -785,7 +802,8 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		if (keystatus[0x4e] > 0)  // +
+		// if (keystatus[0x4e] > 0)  // + on the keypad 
+		if (keystatus[KEY_PLUS] > 0)  // + on the keypad 
 		{
 			keystatus[0x4e] = 0;
 			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
@@ -871,7 +889,8 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		if (keystatus[0xc9] > 0) // PGUP
+		// if (keystatus[0xc9] > 0) // PGUP
+		if (keystatus[buildkeys[11]] > 0) // PGUP
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -985,7 +1004,8 @@ void editinput(void)
 			asksave = 1;
 			keystatus[0xc9] = 0;
 		}
-		if (keystatus[0xd1] > 0) // PGDN
+		// if (keystatus[0xd1] > 0) // PGDN
+		if (keystatus[buildkeys[10]] > 0) // PGDN
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -1408,7 +1428,7 @@ void editinput(void)
 			asksave = 1;
 			keystatus[0x1c] = 0;
 		}
-		if (keystatus[0x2e] > 0)      //C
+		if (keystatus[0x2e] > 0) //C
 		{
 			keystatus[0x2e] = 0;
 			if (keystatus[0x38] > 0)    //Alt-C
@@ -1455,7 +1475,7 @@ void editinput(void)
 				}
 			}
 		}
-		if (keystatus[0x2f] > 0)  //V
+		if (keystatus[0x2f] > 0) //V
 		{
 			if (searchstat == 0) templong = wall[searchwall].picnum;
 			if (searchstat == 1) templong = sector[searchsector].ceilingpicnum;
@@ -1477,7 +1497,7 @@ void editinput(void)
 			keystatus[0x2f] = 0;
 		}
 
-		if (keystatus[0x1a])  // [
+		if (keystatus[KEY_OPEN_BRACE])  // [
 		{
 			keystatus[0x1a] = 0;
 			if (keystatus[0x38]|keystatus[0xb8])
@@ -1525,7 +1545,7 @@ void editinput(void)
 				sector[searchsector].floorstat |= 2;
 			asksave = 1;
 		}
-		if (keystatus[0x1b])  // ]
+		if (keystatus[KEY_CLOSE_BRACE])  // ]
 		{
 			keystatus[0x1b] = 0;
 			if (keystatus[0x38]|keystatus[0xb8])
@@ -2333,11 +2353,13 @@ void editinput(void)
 		}
 
 	}
-	if (keystatus[buildkeys[14]] > 0)  // Enter
-	{
-		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
-	}
+	
+	// if (keystatus[buildkeys[14]] > 0)  // Enter
+	// {
+	// 	buildprintf("Swap editor state...");
+	// 	overheadeditor();
+	// 	keystatus[buildkeys[14]] = 0;
+	// }
 }
 
 unsigned char changechar(unsigned char dachar, int dadir, unsigned char smooshyalign, unsigned char boundcheck)
@@ -2756,8 +2778,11 @@ void overheadeditor(void)
 	circlewall = -1;
 	circlepoints = 7;
 	bstatus = 0;
-	keystatus[buildkeys[14]] = 0;
-	while ((keystatus[buildkeys[14]]>>1) == 0)
+	// keystatus[buildkeys[14]] = 0;
+	keystatus[KEY_F2] = 0;
+
+	// while ((keystatus[buildkeys[14]]>>1) == 0)
+	while ((keystatus[KEY_F2]>>1) == 0)
 	{
 		if (handleevents()) {
 			if (quitevent) {
@@ -2784,12 +2809,13 @@ void overheadeditor(void)
 		if (searchy < 8) searchy = 8;
 		if (searchy > ydim-8-1) searchy = ydim-8-1;
 
-		if (keystatus[0x3b] > 0) posx--, keystatus[0x3b] = 0;
-		if (keystatus[0x3c] > 0) posx++, keystatus[0x3c] = 0;
-		if (keystatus[0x3d] > 0) posy--, keystatus[0x3d] = 0;
-		if (keystatus[0x3e] > 0) posy++, keystatus[0x3e] = 0;
-		if (keystatus[0x43] > 0) ang--, keystatus[0x43] = 0;
-		if (keystatus[0x44] > 0) ang++, keystatus[0x44] = 0;
+		// if (keystatus[0x3b] > 0) posx--, keystatus[0x3b] = 0;
+		// if (keystatus[0x3c] > 0) posx++, keystatus[0x3c] = 0;
+		// if (keystatus[0x3d] > 0) posy--, keystatus[0x3d] = 0;
+		// if (keystatus[0x3e] > 0) posy++, keystatus[0x3e] = 0;
+		// if (keystatus[0x43] > 0) ang--, keystatus[0x43] = 0;
+		// if (keystatus[0x44] > 0) ang++, keystatus[0x44] = 0;
+
 		if (angvel != 0)          //ang += angvel * constant
 		{                         //ENGINE calculates angvel for you
 			doubvel = synctics;
@@ -2977,26 +3003,27 @@ void overheadeditor(void)
 
 		OSD_Draw();
 
-		if (keystatus[88] > 0)   //F12
-		{
-			keystatus[88] = 0;
-			/*
-			j = ydim16; ydim16 = ydim;
-			clear2dscreen();
-			draw2dgrid(posx,posy,ang,zoom,grid);
-			draw2dscreen(posx,posy,ang,zoom,grid);
-			*/
+		// if (keystatus[88] > 0)   //F12
+		// {
+		// 	keystatus[88] = 0;
+		// 	/*
+		// 	j = ydim16; ydim16 = ydim;
+		// 	clear2dscreen();
+		// 	draw2dgrid(posx,posy,ang,zoom,grid);
+		// 	draw2dscreen(posx,posy,ang,zoom,grid);
+		// 	*/
 
-			screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
+		// 	screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
 
-			/*
-			ydim16 = j;
-			clear2dscreen();
-			draw2dgrid(posx,posy,ang,zoom,grid);
-			draw2dscreen(posx,posy,ang,zoom,grid);
-			*/
-			showframe();
-		}
+		// 	/*
+		// 	ydim16 = j;
+		// 	clear2dscreen();
+		// 	draw2dgrid(posx,posy,ang,zoom,grid);
+		// 	draw2dscreen(posx,posy,ang,zoom,grid);
+		// 	*/
+		// 	showframe();
+		// }
+
 		if (keystatus[0x30] > 0)  // B (clip Blocking xor) (2D)
 		{
 			pointhighlight = getpointhighlight(mousxplc, mousyplc);
@@ -5051,14 +5078,17 @@ void overheadeditor(void)
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		if (keystatus[buildkeys[14]] > 0)
+		// if (keystatus[buildkeys[14]] > 0)
+		if (keystatus[KEY_F2] > 0)
 		{
 			updatesector(posx,posy,&cursectnum);
 			if (cursectnum >= 0)
-				keystatus[buildkeys[14]] = 2;
+				// keystatus[buildkeys[14]] = 2;
+				keystatus[KEY_F2] = 2;
 			else
 				printmessage16("Arrow must be inside a sector before entering 3D mode.");
 		}
+
 		if (keystatus[1] > 0)
 		{
 			keystatus[1] = 0;
@@ -5565,7 +5595,6 @@ void overheadeditor(void)
 			}
 			clearkeys();
 		}
-
 		//nextpage();
 	}
 

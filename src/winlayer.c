@@ -1237,7 +1237,7 @@ int setvideomode(int x, int y, int c, int fs)
 
 	shutdownvideo();
 
-	buildprintf("Setting video mode %dx%d (%d-bit %s)\n",
+	buildprintf("Setting video mode %dx%d (%d-bit %s) - winlayer\n",
 			x,y,c, ((fs&1) ? "fullscreen" : "windowed"));
 
 	if (CreateAppWindow(x, y, c, fs, refresh)) return -1;
@@ -2261,7 +2261,7 @@ static BOOL CheckWinVersion(void)
 	return FALSE;
 }
 
-
+// Custom scancodes because reasons? https://www.win.tue.nl/~aeb/linux/kbd/scancodes-10.html
 static const int wscantable[256] = {
 /*         x0    x1    x2    x3    x4    x5    x6    x7    x8    x9    xA    xB    xC    xD    xE    xF */
 /* 0y */ 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
