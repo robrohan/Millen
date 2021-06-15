@@ -18,7 +18,8 @@ void unlockkdm(void);
 #endif
 
 // Implemented in the per-platform interface.
-void initsb(char dadigistat, char damusistat, int dasamplerate, char danumspeakers, char dabytespersample, char daintspersec, char daquality);
+void initsb(char dadigistat, char damusistat, int dasamplerate, char danumspeakers, char dabytespersample,
+            char daintspersec, char daquality);
 void uninitsb(void);
 void refreshaudio(void);
 

@@ -1,0 +1,13 @@
+{
+  "files.associations": {
+    "*.html": "html",
+    "game.h": "c",
+    "names.h": "c"
+  },
+  "files.exclude": {
+    "devcpp": true,
+    "kenbuild": true,
+    "kenbuild-data": true,
+    "xcode": true
+  }
+}

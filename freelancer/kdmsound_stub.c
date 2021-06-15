@@ -4,7 +4,8 @@
 // This file has been modified from Ken Silverman's original release
 // by Jonathon Fowler (jf@jonof.id.au)
 
-void initsb(char dadigistat, char damusistat, int dasamplerate, char danumspeakers, char dabytespersample, char daintspersec, char daquality)
+void initsb(char dadigistat, char damusistat, int dasamplerate, char danumspeakers, char dabytespersample,
+            char daintspersec, char daquality)
 {
 }
 
@@ -23,5 +24,4 @@ int lockkdm(void)
 
 void unlockkdm(void)
 {
-
 }

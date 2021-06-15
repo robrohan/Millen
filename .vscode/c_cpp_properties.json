@@ -1,0 +1,16 @@
+{
+  "configurations": [
+    {
+      "name": "Linux",
+      "intelliSenseMode": "clang-x64",
+      "includePath": [
+        "${workspaceFolder}/include", 
+        "${workspaceFolder}/libsquish"
+      ],
+      "compilerPath": "/usr/bin/clang",
+      "cStandard": "c99"
+    }
+  ],
+  "version": 4
+}
+
