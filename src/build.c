@@ -523,6 +523,9 @@ void showmouse(void)
 	drawline256((searchx  )<<12, (searchy-1)<<12, (searchx  )<<12, (searchy-5)<<12, whitecol);
 }
 
+///
+
+
 void editinput(void)
 {
 	unsigned char smooshyalign, repeatpanalign, *ptr, buffer[80];
@@ -562,12 +565,15 @@ void editinput(void)
 	mousx = (mousx<<16)+mousexsurp;
 	mousy = (mousy<<16)+mouseysurp;
 	{
-	ldiv_t ld;
-	ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
-	ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
+		ldiv_t ld;
+		ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
+		ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
 	}
 	searchx += mousx;
 	searchy += mousy;
+
+	printf("%dx%d", searchx, searchy);
+
 	if (searchx < 4) searchx = 4;
 	if (searchy < 4) searchy = 4;
 	if (searchx > xdim-5) searchx = xdim-5;
@@ -691,7 +697,7 @@ void editinput(void)
 		if (goalz < hiz+(4<<8)) goalz = hiz+(4<<8);
 		if (goalz > loz-(4<<8)) goalz = loz-(4<<8);
 		if (zmode == 1) goalz = loz-zlock;
-		if (goalz < hiz+(4<<8)) goalz = ((loz+hiz)>>1);  //ceiling&floor too close
+		if (goalz < hiz+(4<<8)) goalz = ((loz+hiz)>>1);  //ceiling & floor too close
 		if (zmode == 1) posz = goalz;
 
 		if (goalz != posz)
@@ -2782,7 +2788,8 @@ void overheadeditor(void)
 	keystatus[KEY_F2] = 0;
 
 	// while ((keystatus[buildkeys[14]]>>1) == 0)
-	while ((keystatus[KEY_F2]>>1) == 0)
+	// while ( (keystatus[KEY_F2]>>1) == 0 )
+	while ( keystatus[KEY_F3] == 0 )
 	{
 		if (handleevents()) {
 			if (quitevent) {
@@ -2798,9 +2805,9 @@ void overheadeditor(void)
 		mousx = (mousx<<16)+mousexsurp;
 		mousy = (mousy<<16)+mouseysurp;
 		{
-		ldiv_t ld;
-		ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
-		ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
+			ldiv_t ld;
+			ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
+			ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
 		}
 		searchx += mousx;
 		searchy += mousy;
