@@ -13,6 +13,7 @@
 #include "names.h"
 #include "osd.h"
 #include "cache1d.h"
+#include "keys.h"
 
 
 static unsigned char tempbuf[256];
@@ -180,37 +181,39 @@ void ExtPreCheckKeys(void)
 {
 	int /*cosang, sinang, dx, dy, mindx,*/ i, j, k;
 
-	if (keystatus[0x3e])  //F4 - screen re-size
-	{
-		keystatus[0x3e] = 0;
+	// Cycle through screen sizes.
+	//F4 - screen re-size
+	// if (keystatus[KEY_F4])
+	// {
+	// 	keystatus[KEY_F4] = 0;
 
-			//cycle through all vesa modes, then screen-buffer mode
-		if (keystatus[0x2a]|keystatus[0x36]) {
-			setgamemode(!fullscreen, xdim, ydim, bpp);
-		} else {
+	// 		//cycle through all vesa modes, then screen-buffer mode
+	// 	if (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) {
+	// 		setgamemode(!fullscreen, xdim, ydim, bpp);
+	// 	} else {
 
-			//cycle through all modes
-			j=-1;
+	// 		//cycle through all modes
+	// 		j=-1;
 
-			// work out a mask to select the mode
-			for (i=0; i<validmodecnt; i++)
-				if ((validmode[i].xdim == xdim) &&
-					(validmode[i].ydim == ydim) &&
-					(validmode[i].fs == fullscreen) &&
-					(validmode[i].bpp == bpp))
-					{ j=i; break; }
+	// 		// work out a mask to select the mode
+	// 		for (i=0; i<validmodecnt; i++)
+	// 			if ((validmode[i].xdim == xdim) &&
+	// 				(validmode[i].ydim == ydim) &&
+	// 				(validmode[i].fs == fullscreen) &&
+	// 				(validmode[i].bpp == bpp))
+	// 				{ j=i; break; }
 			
-			for (k=0; k<validmodecnt; k++)
-				if (validmode[k].fs == fullscreen && validmode[k].bpp == bpp) break;
+	// 		for (k=0; k<validmodecnt; k++)
+	// 			if (validmode[k].fs == fullscreen && validmode[k].bpp == bpp) break;
 
-			if (j==-1) j=k;
-			else {
-				j++;
-				if (j==validmodecnt) j=k;
-			}
-			setgamemode(fullscreen,validmode[j].xdim,validmode[j].ydim,bpp);
-		}
-	}
+	// 		if (j==-1) j=k;
+	// 		else {
+	// 			j++;
+	// 			if (j==validmodecnt) j=k;
+	// 		}
+	// 		setgamemode(fullscreen,validmode[j].xdim,validmode[j].ydim,bpp);
+	// 	}
+	// }
 
 #if 0
 	if (keystatus[0x2a]|keystatus[0x36])

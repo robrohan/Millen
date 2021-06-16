@@ -5146,7 +5146,7 @@ void overheadeditor(void)
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		// if (keystatus[buildkeys[14]] > 0)
+		// To sawp to 3d
 		if (keystatus[KEY_F2] > 0)
 		{
 			updatesector(posx,posy,&cursectnum);
