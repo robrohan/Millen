@@ -1,7 +1,10 @@
 # Map Editor Keyboard
 
-| Key         | 2D      | 3D                              |
-| ----------- | ------- | ------------------------------- |
+| Key         | 2D      | 3D          | Modifiers |                    |
+| ----------- | ------- | ----------- | --- |
+| A           |         | Move Up / Jump   | Capslock toggles modes, L CTRL pans up |
+| Z | | Move Down / Duck | Capslock toggles modes, L CTRL pans down |
+
 | Arrow Up    | Forward | Forward                         |
 | Arrow Down  | Back    | Back                            |
 | Arrow Left  | Turn    | Turn                            |

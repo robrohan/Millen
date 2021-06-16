@@ -56,7 +56,7 @@
 #define KEY_N 0x31 // 	N
 #define KEY_M 0x32 // 	M
 #define KEY_COMMA 0x33 // 	, <
-#define KEY_PEROID 0x34 // 	. >
+#define KEY_PERIOD 0x34 // 	. >
 #define KEY_QUESTION 0x35 // 	/ ?
 #define KEY_R_SHIFT 0x36 // 	RShift
 // #define KEY_L_CTRL 0x38 // 	LCtrl
@@ -107,7 +107,7 @@
 #define KEY_KP9_PG_UP 0x49 // 	KP-9 / PgUp
 #define KEY_KP6_RIGHT 0x4d // 	KP-6 / Right
 #define KEY_KP3_PG_DOWN 0x51 // 	KP-3 / PgDn
-#define KEY_KP_PEROID_DELETE 0x53 // 	KP-. / Del
+#define KEY_KP_PERIOD_DELETE 0x53 // 	KP-. / Del
 // #define KEY_KP_MINUS 0x54 // 	KP--
 #define KEY_KP_MINUS 0x4a // 	KP--
 // #define KEY_KP_PLUS 0x37 // 	KP-+

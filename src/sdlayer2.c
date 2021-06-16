@@ -1444,7 +1444,6 @@ int handleevents(void)
 					break;
 
 				if (ev.key.type == SDL_KEYDOWN) {
-					printf("%#02x %#02x\n", code, keystatus[code]);
 					if (!keystatus[code]) {
 						SetKey(code, 1);
 						if (keypresscallback)
@@ -1569,7 +1568,7 @@ static int buildkeytranslationtable(void)
 	MAP(SDL_SCANCODE_APOSTROPHE, KEY_QUOTE);
 	MAP(SDL_SCANCODE_COMMA,      KEY_COMMA);
 	MAP(SDL_SCANCODE_MINUS,      KEY_MINUS);
-	MAP(SDL_SCANCODE_PERIOD,     KEY_PEROID);
+	MAP(SDL_SCANCODE_PERIOD,     KEY_PERIOD);
 	MAP(SDL_SCANCODE_SLASH,      KEY_QUESTION);
 	MAP(SDL_SCANCODE_0,          KEY_ZERO);
 	MAP(SDL_SCANCODE_1,          KEY_ONE);
@@ -1627,7 +1626,7 @@ static int buildkeytranslationtable(void)
 	MAP(SDL_SCANCODE_KP_7,        KEY_KP7_HOME);
 	MAP(SDL_SCANCODE_KP_8,        KEY_KP8_UP);
 	MAP(SDL_SCANCODE_KP_9,        KEY_KP9_PG_UP);
-	MAP(SDL_SCANCODE_KP_PERIOD,   KEY_KP_PEROID_DELETE);
+	MAP(SDL_SCANCODE_KP_PERIOD,   KEY_KP_PERIOD_DELETE);
 	MAP(SDL_SCANCODE_KP_DIVIDE,   KEY_KP_DIV);
 	MAP(SDL_SCANCODE_KP_MULTIPLY, KEY_KP_TIMES);
 	MAP(SDL_SCANCODE_KP_MINUS,    KEY_KP_MINUS);

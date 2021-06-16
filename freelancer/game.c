@@ -124,7 +124,7 @@ char option[NUMOPTIONS] = {1, 1, 1, 0, 0, 0, 1, (4 << 4) | 1 | 2 | 4};
 int keys[NUMKEYS] = {
     // up    dn     lf      rt   ..    ..     ..     sp
     // 0     1      2      3
-    KEY_W, KEY_S, KEY_COMMA, KEY_PEROID,
+    KEY_W, KEY_S, KEY_COMMA, KEY_PERIOD,
     //  4            5          6          7
     KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
     // a     z     pgd   pgu       ,           .
