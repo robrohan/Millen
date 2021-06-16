@@ -64,7 +64,7 @@ const char **_buildargv = NULL;
 
 char quitevent=0, appactive=1;
 
-static char apptitle[256] = "Build Engine";
+static char apptitle[256] = "Square Engine";
 static char wintitle[256] = "";
 
 // video

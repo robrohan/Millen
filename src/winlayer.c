@@ -51,7 +51,7 @@ static BOOL window_class_registered = FALSE;
 static HANDLE instanceflag = NULL;
 
 int    backgroundidle = 1;
-static char apptitle[256] = "Build Engine";
+static char apptitle[256] = "Square Engine";
 static char wintitle[256] = "";
 
 static WORD sysgamma[3][256];

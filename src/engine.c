@@ -7555,7 +7555,7 @@ int setgamemode(char davidoption, int daxdim, int daydim, int dabpp)
 	    (davidoption == fullscreen) && (xdim == daxdim) && (ydim == daydim) && (bpp == dabpp))
 		return(0);
 
-	strcpy(kensmessage,"!!!! BUILD engine&tools programmed by Ken Silverman of E.G. RI.  (c) Copyright 1995 Ken Silverman.  Summary:  BUILD = Ken. !!!!");
+	strcpy(kensmessage,"BUILD engine & tools programmed by Ken Silverman (c) Copyright 1995 Ken Silverman.");
 
 	//if (checkvideomode(&daxdim, &daydim, dabpp, davidoption)<0) return (-1);
 

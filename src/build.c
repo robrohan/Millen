@@ -262,7 +262,7 @@ int app_main(int argc, char const * const argv[])
 	OSD_RegisterFunction("vidmode","vidmode [xdim ydim] [bpp] [fullscreen]: immediately change the video mode",osdcmd_vidmode);
 	OSD_RegisterFunction("mapversion","mapversion [ver]: change the map version for save (min 5, max 8)", osdcmd_mapversion);
 
-	wm_setapptitle("BUILD by Ken Silverman");
+	wm_setapptitle("Square");
 
 #ifdef RENDERTYPEWIN
 	backgroundidle = 1;
@@ -280,8 +280,8 @@ int app_main(int argc, char const * const argv[])
 			}
 			else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help") || !strcmp(argv[i], "-?")) {
 				char *s =
-					"BUILD by Ken Silverman\n"
-					"Syntax: build [options] mapname\n"
+					"Square\n"
+					"Syntax: square [options] mapname\n"
 					"Options:\n"
 					"\t-grp\tUse an extra GRP or ZIP file.\n"
 					"\t-g\tSame as above.\n"
@@ -290,7 +290,7 @@ int app_main(int argc, char const * const argv[])
 #endif
 					;
 #if defined RENDERTYPEWIN || (defined RENDERTYPESDL && (defined __APPLE__ || defined HAVE_GTK))
-				wm_msgbox("BUILD by Ken Silverman","%s",s);
+				wm_msgbox("Square","%s",s);
 #else
 				puts(s);
 #endif
@@ -347,14 +347,14 @@ int app_main(int argc, char const * const argv[])
 		free((void *)grps);
 	}
 
-	buildsetlogfile("build.log");
+	buildsetlogfile("square.log");
 	inittimer(TIMERINTSPERSECOND);
 	installusertimercallback(keytimerstuff);
 
 	loadpics("tiles000.art",1048576);
 	loadnames();
 
-	Bstrcpy(kensig,"BUILD by Ken Silverman");
+	Bstrcpy(kensig,"Square");
 	initcrc();
 
 	if (!loaddefinitionsfile(defsfilename)) buildputs("Definitions file loaded.\n");
