@@ -1721,6 +1721,7 @@ void editinput(void)
 		else
 			repeatcounty = 0;
 
+		// Rotate a wall sprite
 		if (keystatus[KEY_COMMA] > 0) // , Search & fix panning to the left (3D)
 		{
 			if (searchstat == 3)
@@ -1732,10 +1733,11 @@ void editinput(void)
 				{
 					sprite[i].ang = ((sprite[i].ang+2048-128)&2047);
 					// TODO: shouldn't this be out of this else?
-					keystatus[KEY_COMMA] = 0;
 				}
 			}
+			keystatus[KEY_COMMA] = 0;
 		}
+		// Rotate a wall sprite
 		if (keystatus[KEY_PERIOD] > 0) // . Search & fix panning to the right (3D)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
@@ -1819,21 +1821,22 @@ void editinput(void)
 				while ((wall[wallfind[0]].picnum == wall[searchwall].picnum) && (wallfind[0] != searchwall) && (cnt > 0));
 				*/
 
-				keystatus[0x34] = 0;
+				keystatus[KEY_PERIOD] = 0;
 			}
 			if (searchstat == 3)
 			{
 				i = searchwall;
-				if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+				if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 					sprite[i].ang = ((sprite[i].ang+2048+1)&2047);
 				else
 				{
 					sprite[i].ang = ((sprite[i].ang+2048+128)&2047);
-					keystatus[0x34] = 0;
 				}
+				keystatus[KEY_PERIOD] = 0;
 			}
 		}
-		if (keystatus[0x35] > 0)  // /?     Reset panning&repeat to 0
+		// /?     Reset panning&repeat to 0
+		if (keystatus[KEY_QUESTION] > 0)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
 			{
@@ -1870,19 +1873,19 @@ void editinput(void)
 					sprite[searchwall].yrepeat = 64;
 				}
 			}
-			keystatus[0x35] = 0;
+			keystatus[KEY_QUESTION] = 0;
 			asksave = 1;
 		}
-
-		if (keystatus[0x19] > 0)  // P (parallaxing sky)
+		// P (parallaxing sky)
+		if (keystatus[KEY_P] > 0)
 		{
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)
 			{
 				parallaxtype++;
 				if (parallaxtype == 3)
 					parallaxtype = 0;
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)
 			{
 				switch (searchstat)
 				{
@@ -1917,13 +1920,13 @@ void editinput(void)
 					asksave = 1;
 				}
 			}
-			keystatus[0x19] = 0;
+			keystatus[KEY_P] = 0;
 		}
-
-		if (keystatus[0x20] != 0)   //Alt-D  (adjust sprite[].clipdist)
+		// Alt-D  (adjust sprite[].clipdist)
+		if (keystatus[KEY_D] != 0) 
 		{
-			keystatus[0x20] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)
+			keystatus[KEY_D] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)
 			{
 				if (searchstat == 3)
 				{
@@ -1932,8 +1935,8 @@ void editinput(void)
 				}
 			}
 		}
-
-		if (keystatus[0x30] > 0)  // B (clip Blocking xor) (3D)
+		// B (clip Blocking xor) (3D)
+		if (keystatus[KEY_B] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -1953,9 +1956,10 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x30] = 0;
+			keystatus[KEY_B] = 0;
 		}
-		if (keystatus[0x14] > 0)  // T (transluscence for sprites/masked walls)
+		// T (transluscence for sprites/masked walls)
+		if (keystatus[KEY_T] > 0)
 		{
 			/*if (searchstat == 1)   //Set masked/transluscent ceilings/floors
 			{
@@ -2009,10 +2013,10 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x14] = 0;
+			keystatus[KEY_T] = 0;
 		}
-
-		if (keystatus[0x2] > 0)  // 1 (make 1-way wall)
+		// 1 (make 1-way wall)
+		if (keystatus[KEY_ONE] > 0)
 		{
 			if (searchstat != 3)
 			{
@@ -2032,18 +2036,20 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x2] = 0;
+			keystatus[KEY_ONE] = 0;
 		}
-		if (keystatus[0x3] > 0)  // 2 (bottom wall swapping)
+		// 2 (bottom wall swapping)
+		if (keystatus[KEY_TWO] > 0)
 		{
 			if (searchstat != 3)
 			{
 				wall[searchwall].cstat ^= 2;
 				asksave = 1;
 			}
-			keystatus[0x3] = 0;
+			keystatus[KEY_TWO] = 0;
 		}
-		if (keystatus[0x18] > 0)  // O (top/bottom orientation - for doors)
+		// O (top/bottom orientation - for doors)
+		if (keystatus[KEY_O] > 0)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
 			{
@@ -2076,14 +2082,15 @@ void editinput(void)
 					sprite[i].y += ksgn(wall[j].x-wall[hitwall].x);
 				}
 			}
-			keystatus[0x18] = 0;
+			keystatus[KEY_O] = 0;
 		}
-		if (keystatus[0x32] > 0)  // M (masking walls)
+		// M (masking walls)
+		if (keystatus[KEY_M] > 0)
 		{
 			if (searchstat != 3)
 			{
 				i = wall[searchwall].nextwall;
-				templong = (keystatus[0x2a]|keystatus[0x36]);
+				templong = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 				if (i >= 0)
 				{
 					wall[searchwall].cstat ^= 16;
@@ -2111,9 +2118,10 @@ void editinput(void)
 					asksave = 1;
 				}
 			}
-			keystatus[0x32] = 0;
+			keystatus[KEY_M] = 0;
 		}
-		if (keystatus[0x23] > 0)  // H (hitscan sensitivity)
+		// H (hitscan sensitivity)
+		if (keystatus[KEY_H] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -2123,16 +2131,17 @@ void editinput(void)
 			else
 			{
 				wall[searchwall].cstat ^= 64;
-				if ((wall[searchwall].nextwall >= 0) && ((keystatus[0x2a]|keystatus[0x36]) == 0))
+				if ((wall[searchwall].nextwall >= 0) && ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0))
 				{
 					wall[wall[searchwall].nextwall].cstat &= ~64;
 					wall[wall[searchwall].nextwall].cstat |= (wall[searchwall].cstat&64);
 				}
 				asksave = 1;
 			}
-			keystatus[0x23] = 0;
+			keystatus[KEY_H] = 0;
 		}
-		if (keystatus[0x12] > 0)  // E (expand)
+		// E (expand)
+		if (keystatus[KEY_E] > 0)
 		{
 			if (searchstat == 1)
 			{
@@ -2144,9 +2153,10 @@ void editinput(void)
 				sector[searchsector].floorstat ^= 8;
 				asksave = 1;
 			}
-			keystatus[0x12] = 0;
+			keystatus[KEY_E] = 0;
 		}
-		if (keystatus[0x13] > 0)  // R (relative alignment, rotation)
+		// R (relative alignment, rotation)
+		if (keystatus[KEY_R] > 0)
 		{
 			if (searchstat == 1)
 			{
@@ -2165,12 +2175,13 @@ void editinput(void)
 				sprite[searchwall].cstat = i;
 				asksave = 1;
 			}
-			keystatus[0x13] = 0;
+			keystatus[KEY_R] = 0;
 		}
-		if (keystatus[0x21] > 0)  //F (Flip)
+		//F (Flip)
+		if (keystatus[KEY_F] > 0)
 		{
-			keystatus[0x21] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT-F (relative alignmment flip)
+			keystatus[KEY_F] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT-F (relative alignmment flip)
 			{
 				if (searchstat != 3)
 				{
@@ -2262,7 +2273,8 @@ void editinput(void)
 				}
 			}
 		}
-		if (keystatus[0x1f] > 0)  //S (insert sprite) (3D)
+		//S (insert sprite) (3D)
+		if (keystatus[KEY_S] > 0)
 		{
 			dax = 16384;
 			day = divscale14(searchx-(xdim>>1),xdim>>1);
@@ -2370,9 +2382,10 @@ void editinput(void)
 				asksave = 1;
 			}
 
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
-		if (keystatus[0xd3] > 0)
+		// delete sprite
+		if (keystatus[KEY_DELETE] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -2380,10 +2393,12 @@ void editinput(void)
 				updatenumsprites();
 				asksave = 1;
 			}
-			keystatus[0xd3] = 0;
+			keystatus[KEY_DELETE] = 0;
 		}
-
-		if ((keystatus[0x3f]|keystatus[0x40]) > 0)  //F5,F6
+		
+		// Draw extra data into the editor
+		//F5,F6
+		if ((keystatus[KEY_F5]|keystatus[KEY_F6]) > 0)  
 		{
 			switch(searchstat)
 			{
@@ -2391,9 +2406,10 @@ void editinput(void)
 				case 0: case 4: ExtShowWallData(searchwall); break;
 				case 3: ExtShowSpriteData(searchwall); break;
 			}
-			keystatus[0x3f] = 0, keystatus[0x40] = 0;
+			keystatus[KEY_F5] = 0, keystatus[KEY_F6] = 0;
 		}
-		if ((keystatus[0x41]|keystatus[0x42]) > 0)  //F7,F8
+		//F7,F8
+		if ((keystatus[KEY_F7]|keystatus[KEY_F8]) > 0)  
 		{
 			switch(searchstat)
 			{
@@ -2401,9 +2417,8 @@ void editinput(void)
 				case 0: case 4: ExtEditWallData(searchwall); break;
 				case 3: ExtEditSpriteData(searchwall); break;
 			}
-			keystatus[0x41] = 0, keystatus[0x42] = 0;
+			keystatus[KEY_F7] = 0, keystatus[KEY_F8] = 0;
 		}
-
 	}
 	
 	// if (keystatus[buildkeys[14]] > 0)  // Enter

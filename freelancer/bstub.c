@@ -343,10 +343,13 @@ void ExtCheckKeys(void)
 			enddrawing();
 		}
 #endif
-		if (keystatus[0xa]) setaspect(viewingrange+(viewingrange>>8),yxaspect+(yxaspect>>8));
-		if (keystatus[0xb]) setaspect(viewingrange-(viewingrange>>8),yxaspect-(yxaspect>>8));
-		if (keystatus[0xc]) setaspect(viewingrange,yxaspect-(yxaspect>>8));
-		if (keystatus[0xd]) setaspect(viewingrange,yxaspect+(yxaspect>>8));
+
+		// Change Screen aspects
+		// if (keystatus[0xa]) setaspect(viewingrange+(viewingrange>>8),yxaspect+(yxaspect>>8));
+		// if (keystatus[0xb]) setaspect(viewingrange-(viewingrange>>8),yxaspect-(yxaspect>>8));
+		// if (keystatus[0xc]) setaspect(viewingrange,yxaspect-(yxaspect>>8));
+		// if (keystatus[0xd]) setaspect(viewingrange,yxaspect+(yxaspect>>8));
+
 		//if (keystatus[0x38]) setrollangle(rollangle+=((keystatus[0x2a]|keystatus[0x36])*6+2));
 		//if (keystatus[0xb8]) setrollangle(rollangle-=((keystatus[0x2a]|keystatus[0x36])*6+2));
 		//if (keystatus[0x1d]|keystatus[0x9d]) setrollangle(rollangle=0);
