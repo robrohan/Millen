@@ -2845,16 +2845,13 @@ void overheadeditor(void)
 	circlewall = -1;
 	circlepoints = 7;
 	bstatus = 0;
-	// keystatus[buildkeys[14]] = 0;
 	keystatus[KEY_F2] = 0;
 
-	// while ((keystatus[buildkeys[14]]>>1) == 0)
-	// while ( (keystatus[KEY_F2]>>1) == 0 )
-	while ( keystatus[KEY_F3] == 0 )
+	while (keystatus[KEY_F3] == 0 )
 	{
 		if (handleevents()) {
 			if (quitevent) {
-				keystatus[1] = 1;
+				keystatus[KEY_ESCAPE] = 1;
 				quitevent = 0;
 			}
 		}
@@ -2887,7 +2884,7 @@ void overheadeditor(void)
 		if (angvel != 0)          //ang += angvel * constant
 		{                         //ENGINE calculates angvel for you
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)  //Lt. shift makes turn velocity 50% faster
+			if (keystatus[KEY_L_SHIFT] > 0)  //Lt. shift makes turn velocity 50% faster
 				doubvel += (synctics>>1);
 			ang += ((angvel*doubvel)>>4);
 			ang = (ang+2048)&2047;
@@ -2895,7 +2892,7 @@ void overheadeditor(void)
 		if ((vel|svel) != 0)
 		{
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)     //Lt. shift doubles forward velocity
+			if (keystatus[KEY_L_SHIFT] > 0)     //Lt. shift doubles forward velocity
 				doubvel += synctics;
 			xvect = 0, yvect = 0;
 			if (vel != 0)
@@ -3092,7 +3089,8 @@ void overheadeditor(void)
 		// 	showframe();
 		// }
 
-		if (keystatus[0x30] > 0)  // B (clip Blocking xor) (2D)
+		// B (clip Blocking xor) (2D)
+		if (keystatus[KEY_B] > 0)
 		{
 			pointhighlight = getpointhighlight(mousxplc, mousyplc);
 			linehighlight = getlinehighlight(mousxplc, mousyplc);
@@ -3108,19 +3106,20 @@ void overheadeditor(void)
 			{
 				wall[linehighlight].cstat ^= 1;
 				wall[linehighlight].cstat &= ~64;
-				if ((wall[linehighlight].nextwall >= 0) && ((keystatus[0x2a]|keystatus[0x36]) == 0))
+				if ((wall[linehighlight].nextwall >= 0) && ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0))
 				{
 					wall[wall[linehighlight].nextwall].cstat &= ~(1+64);
 					wall[wall[linehighlight].nextwall].cstat |= (wall[linehighlight].cstat&1);
 				}
 				asksave = 1;
 			}
-			keystatus[0x30] = 0;
+			keystatus[KEY_B] = 0;
 		}
-		if (keystatus[0x21] > 0)  //F (F alone does nothing in 2D right now)
+		//F (F alone does nothing in 2D right now)
+		if (keystatus[KEY_F] > 0)
 		{
-			keystatus[0x21] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT-F (relative alignmment flip)
+			keystatus[KEY_F] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT-F (relative alignmment flip)
 			{
 				linehighlight = getlinehighlight(mousxplc, mousyplc);
 				if (linehighlight >= 0)
@@ -3131,10 +3130,10 @@ void overheadeditor(void)
 				}
 			}
 		}
-
-		if (keystatus[0x18] > 0)  // O (ornament onto wall) (2D)
+		// O (ornament onto wall) (2D)
+		if (keystatus[KEY_O] > 0)
 		{
-			keystatus[0x18] = 0;
+			keystatus[KEY_O] = 0;
 			if ((pointhighlight&0xc000) == 16384)
 			{
 				asksave = 1;
@@ -3162,8 +3161,8 @@ void overheadeditor(void)
 				}
 			}
 		}
-
-		if (keystatus[0x33] > 0)  // , (2D)
+		// , (2D)
+		if (keystatus[KEY_COMMA] > 0)
 		{
 			if (highlightsectorcnt > 0)
 			{
@@ -3187,7 +3186,7 @@ void overheadeditor(void)
 					day /= k;
 				}
 
-				k = (keystatus[0x2a]|keystatus[0x36]);
+				k = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 
 				if (k == 0)
 				{
@@ -3237,7 +3236,7 @@ void overheadeditor(void)
 						j = nextspritesect[j];
 					}
 				}
-				if (k == 0) keystatus[0x33] = 0;
+				if (k == 0) keystatus[KEY_COMMA] = 0;
 				asksave = 1;
 			}
 			else
@@ -3245,12 +3244,12 @@ void overheadeditor(void)
 				if (pointhighlight >= 16384)
 				{
 					i = pointhighlight-16384;
-					if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 						sprite[i].ang = ((sprite[i].ang+2048-1)&2047);
 					else
 					{
 						sprite[i].ang = ((sprite[i].ang+2048-128)&2047);
-						keystatus[0x33] = 0;
+						keystatus[KEY_COMMA] = 0;
 					}
 
 					clearmidstatbar16();
@@ -3258,7 +3257,8 @@ void overheadeditor(void)
 				}
 			}
 		}
-		if (keystatus[0x34] > 0)  // .  (2D)
+		// .  (2D)
+		if (keystatus[KEY_PERIOD] > 0)
 		{
 			if (highlightsectorcnt > 0)
 			{
@@ -3282,7 +3282,7 @@ void overheadeditor(void)
 					day /= k;
 				}
 
-				k = (keystatus[0x2a]|keystatus[0x36]);
+				k = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 
 				if (k == 0)
 				{
@@ -3332,7 +3332,7 @@ void overheadeditor(void)
 						j = nextspritesect[j];
 					}
 				}
-				if (k == 0) keystatus[0x34] = 0;
+				if (k == 0) keystatus[KEY_PERIOD] = 0;
 				asksave = 1;
 			}
 			else
@@ -3340,12 +3340,12 @@ void overheadeditor(void)
 				if (pointhighlight >= 16384)
 				{
 					i = pointhighlight-16384;
-					if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 						sprite[i].ang = ((sprite[i].ang+2048+1)&2047);
 					else
 					{
 						sprite[i].ang = ((sprite[i].ang+2048+128)&2047);
-						keystatus[0x34] = 0;
+						keystatus[KEY_PERIOD] = 0;
 					}
 
 					clearmidstatbar16();
@@ -3353,20 +3353,21 @@ void overheadeditor(void)
 				}
 			}
 		}
-		if (keystatus[0x46] > 0)  //Scroll lock (set starting position)
+		//Scroll lock (set starting position)
+		if (keystatus[KEY_SCROLLLOCK] > 0)
 		{
 			startposx = posx;
 			startposy = posy;
 			startposz = posz;
 			startang = ang;
 			startsectnum = cursectnum;
-			keystatus[0x46] = 0;
+			keystatus[KEY_SCROLLLOCK] = 0;
 			asksave = 1;
 		}
-
-		if (keystatus[0x3f] > 0)  //F5
+		//F5 - show sector data
+		if (keystatus[KEY_F5] > 0)
 		{
-			keystatus[0x3f] = 0;
+			keystatus[KEY_F5] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3377,9 +3378,10 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x40] > 0)  //F6
+		//F6 show sprite data
+		if (keystatus[KEY_F6] > 0)
 		{
-			keystatus[0x40] = 0;
+			keystatus[KEY_F6] = 0;
 
 			if (pointhighlight >= 16384)
 			{
@@ -3398,9 +3400,10 @@ void overheadeditor(void)
 				ydim16 = ydim-STATUS2DSIZ;
 			}
 		}
-		if (keystatus[0x41] > 0)  //F7
+		//F7 - edit sector data
+		if (keystatus[KEY_F7] > 0)  
 		{
-			keystatus[0x41] = 0;
+			keystatus[KEY_F7] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3411,9 +3414,10 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x42] > 0)  //F8
+		//F8 - edit sprite data
+		if (keystatus[KEY_F8] > 0)
 		{
-			keystatus[0x42] = 0;
+			keystatus[KEY_F8] = 0;
 
 			if (pointhighlight >= 16384)
 			{
@@ -3432,11 +3436,11 @@ void overheadeditor(void)
 				ydim16 = ydim-STATUS2DSIZ;
 			}
 		}
-
-		if (keystatus[0x14] > 0)  // T (tag)
+		// T (tag)
+		if (keystatus[KEY_T] > 0)  
 		{
-			keystatus[0x14] = 0;
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //Ctrl-T
+			keystatus[KEY_T] = 0;
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //Ctrl-T
 			{
 				showtags ^= 1;
 				if (showtags == 0)
@@ -3444,7 +3448,7 @@ void overheadeditor(void)
 				else
 					printmessage16("Show tags ON");
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT
 			{
 				if (pointhighlight >= 16384)
 				{
@@ -3478,10 +3482,11 @@ void overheadeditor(void)
 				printmessage16("");
 			}
 		}
-		if (keystatus[0x23] > 0)  //H (Hi 16 bits of tag)
+		//H (Hi 16 bits of tag)
+		if (keystatus[KEY_H] > 0)  
 		{
-			keystatus[0x23] = 0;
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //Ctrl-H
+			keystatus[KEY_H] = 0;
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //Ctrl-H
 			{
 				pointhighlight = getpointhighlight(mousxplc, mousyplc);
 				linehighlight = getlinehighlight(mousxplc, mousyplc);
@@ -3502,7 +3507,7 @@ void overheadeditor(void)
 					asksave = 1;
 				}
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT
 			{
 				if (pointhighlight >= 16384)
 				{
@@ -3535,9 +3540,10 @@ void overheadeditor(void)
 			}
 			printmessage16("");
 		}
-		if (keystatus[0x19] > 0)  // P (palookup #)
+		// P (palookup #)
+		if (keystatus[KEY_P] > 0)
 		{
-			keystatus[0x19] = 0;
+			keystatus[KEY_P] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3556,7 +3562,8 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x12] > 0)  // E (status list)
+		// E (status list)
+		if (keystatus[KEY_E] > 0)
 		{
 			if (pointhighlight >= 16384)
 			{
@@ -3569,14 +3576,14 @@ void overheadeditor(void)
 
 			printmessage16("");
 
-			keystatus[0x12] = 0;
+			keystatus[KEY_E] = 0;
 		}
-
-		if (keystatus[0x0f] > 0)  //TAB
+		// TAB
+		if (keystatus[KEY_TAB] > 0)
 		{
 			clearmidstatbar16();
 
-			if ((keystatus[0x38]|keystatus[0xb8]|keystatus[0x1d]|keystatus[0x9d]) > 0)  //ALT or CTRL
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]|keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //ALT or CTRL
 			{
 				if (pointhighlight >= 16384)
 					showspritedata((short)pointhighlight-16384);
@@ -3592,13 +3599,12 @@ void overheadeditor(void)
 						break;
 					}
 			}
-			keystatus[0x0f] = 0;
+			keystatus[KEY_TAB] = 0;
 		}
-
 
 		if (highlightsectorcnt < 0)
 		{
-			if (keystatus[0x36] > 0)  //Right shift (point highlighting)
+			if (keystatus[KEY_R_SHIFT] > 0)  //Right shift (point highlighting)
 			{
 				if (highlightcnt == 0)
 				{
@@ -3638,7 +3644,7 @@ void overheadeditor(void)
 						templong = highlighty1; highlighty1 = highlighty2; highlighty2 = templong;
 					}
 
-					if ((keystatus[0x1d]|keystatus[0x9d]) > 0)
+					if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)
 					{
 						if ((linehighlight >= 0) && (linehighlight < MAXWALLS))
 						{
@@ -3686,9 +3692,10 @@ void overheadeditor(void)
 				}
 			}
 		}
+		
 		if (highlightcnt < 0)
 		{
-			if (keystatus[0xb8] > 0)  //Right alt (sector highlighting)
+			if (keystatus[KEY_R_ALT] > 0)  //Right alt (sector highlighting)
 			{
 				if (highlightsectorcnt == 0)
 				{
@@ -3778,7 +3785,6 @@ void overheadeditor(void)
 							}
 						}
 					}
-
 				}
 			}
 		}
@@ -3858,7 +3864,6 @@ void overheadeditor(void)
 					asksave = 1;
 				}
 			}
-
 		}
 
 		if ((bstatus&1) > 0)                //drag points
@@ -4019,25 +4024,29 @@ void overheadeditor(void)
 			posy = mousyplc;
 		}
 
-		if (((keystatus[buildkeys[8]] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
-		if (((keystatus[buildkeys[9]] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
+		if (((keystatus[KEY_A] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
+		if (((keystatus[KEY_Z] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
 
-		if (keystatus[0x22] > 0)  // G (grid on/off)
+		// G (grid on/off)
+		if (keystatus[KEY_G] > 0)
 		{
 			grid++;
 			if (grid == 7) grid = 0;
-			keystatus[0x22] = 0;
+			keystatus[KEY_G] = 0;
 		}
-		if (keystatus[0x26] > 0)  // L (grid lock)
+
+		// L (grid lock)
+		if (keystatus[KEY_L] > 0)
 		{
-			gridlock = 1-gridlock, keystatus[0x26] = 0;
+			gridlock = 1-gridlock, keystatus[KEY_L] = 0;
 			if (gridlock == 0)
 				printmessage16("Grid locking OFF");
 			else
 				printmessage16("Grid locking ON");
 		}
 
-		if (keystatus[0x24] > 0)  // J (join sectors)
+		// J (join sectors)
+		if (keystatus[KEY_J] > 0)
 		{
 			if (joinsector[0] >= 0)
 			{
@@ -4151,10 +4160,11 @@ void overheadeditor(void)
 						break;
 					}
 			}
-			keystatus[0x24] = 0;
+			keystatus[KEY_J] = 0;
 		}
 
-		if (((keystatus[0x38]|keystatus[0xb8])&keystatus[0x1f]) > 0) //ALT-S
+		// ALT-S
+		if (((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])&keystatus[KEY_S]) > 0) 
 		{
 			if ((linehighlight >= 0) && (wall[linehighlight].nextwall == -1))
 			{
@@ -4175,9 +4185,9 @@ void overheadeditor(void)
 					printmessage16("Inner loop made into new sector.");
 				}
 			}
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
-		else if (keystatus[0x1f] > 0)  //S
+		else if (keystatus[KEY_S] > 0)  //S
 		{
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -4261,10 +4271,11 @@ void overheadeditor(void)
 				asksave = 1;
 			}
 
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
 
-		if (keystatus[0x2e] > 0)  // C (make circle of points)
+		// C (make circle of points)
+		if (keystatus[KEY_C] > 0)
 		{
 			if (circlewall >= 0)
 			{
@@ -4275,22 +4286,26 @@ void overheadeditor(void)
 				if (linehighlight >= 0)
 					circlewall = linehighlight;
 			}
-			keystatus[0x2e] = 0;
+			keystatus[KEY_C] = 0;
 		}
-		if (keystatus[0x4a] > 0)  // -
+
+		// -
+		if (keystatus[KEY_KP_MINUS] > 0)
 		{
 			if (circlepoints > 1)
 				circlepoints--;
-			keystatus[0x4a] = 0;
+			keystatus[KEY_KP_MINUS] = 0;
 		}
-		if (keystatus[0x4e] > 0)  // +
+
+		// +
+		if (keystatus[KEY_KP_PLUS] > 0)
 		{
 			if (circlepoints < 63)
 				circlepoints++;
-			keystatus[0x4e] = 0;
+			keystatus[KEY_KP_PLUS] = 0;
 		}
 
-		bad = (keystatus[0x39] > 0);  //Gotta do this to save lots of 3 spaces!
+		bad = (keystatus[KEY_SPACE] > 0);  //Gotta do this to save lots of 3 spaces!
 
 		if (circlewall >= 0)
 		{
@@ -4355,7 +4370,7 @@ void overheadeditor(void)
 				if (bad > 0)
 				{
 					bad = 0;
-					keystatus[0x39] = 0;
+					keystatus[KEY_SPACE] = 0;
 					asksave = 1;
 					printmessage16("Circle points inserted.");
 					circlewall = -1;
@@ -4363,9 +4378,10 @@ void overheadeditor(void)
 			}
 		}
 
-		if (bad > 0)   //Space bar test
+		// Space bar test
+		if (bad > 0)
 		{
-			keystatus[0x39] = 0;
+			keystatus[KEY_SPACE] = 0;
 			adjustmark(&mousxplc,&mousyplc,newnumwalls);
 			if (checkautoinsert(mousxplc,mousyplc,newnumwalls) == 1)
 			{
@@ -4924,10 +4940,11 @@ void overheadeditor(void)
 			}
 		}
 
-		if (keystatus[0x1c] > 0) //Left Enter
+		// Left Enter - and left enter + shift
+		if (keystatus[KEY_ENTER] > 0) 
 		{
-			keystatus[0x1c] = 0;
-			if (keystatus[0x2a]&keystatus[0x1d])
+			keystatus[KEY_ENTER] = 0;
+			if (keystatus[KEY_L_SHIFT]&keystatus[KEY_R_SHIFT])
 			{
 				printmessage16("CHECKING ALL POINTERS!");
 				for(i=0;i<numsectors;i++)
@@ -4967,25 +4984,27 @@ void overheadeditor(void)
 			}
 		}
 
-		if ((keystatus[0x0e] > 0) && (newnumwalls >= numwalls)) //Backspace
+		// Backspace
+		if ((keystatus[KEY_BACKSPACE] > 0) && (newnumwalls >= numwalls))
 		{
 			if (newnumwalls > numwalls)
 			{
 				newnumwalls--;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				keystatus[KEY_BACKSPACE] = 0;
 			}
 			if (newnumwalls == numwalls)
 			{
 				newnumwalls = -1;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				keystatus[KEY_BACKSPACE] = 0;
 			}
 		}
 
-		if ((keystatus[0xd3] > 0) && (keystatus[0x9d] > 0) && (numwalls >= 0))
+		// right control + delete
+		if ((keystatus[KEY_DELETE] > 0) && (keystatus[KEY_R_CTRL] > 0) && (numwalls >= 0))
 		{                                                      //sector delete
-			keystatus[0xd3] = 0;
+			keystatus[KEY_DELETE] = 0;
 
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -5021,7 +5040,8 @@ void overheadeditor(void)
 				}
 		}
 
-		if ((keystatus[0xd3] > 0) && (pointhighlight >= 0))
+		// delete
+		if ((keystatus[KEY_DELETE] > 0) && (pointhighlight >= 0))
 		{
 			if ((pointhighlight&0xc000) == 16384)   //Sprite Delete
 			{
@@ -5030,10 +5050,11 @@ void overheadeditor(void)
 				updatenumsprites();
 				asksave = 1;
 			}
-			keystatus[0xd3] = 0;
+			keystatus[KEY_DELETE] = 0;
 		}
 
-		if (keystatus[0xd2] > 0)  //InsertPoint
+		// InsertPoint
+		if (keystatus[KEY_INSERT] > 0)
 		{
 			if (highlightsectorcnt >= 0)
 			{
@@ -5127,7 +5148,7 @@ void overheadeditor(void)
 
 				asksave = 1;
 			}
-			keystatus[0xd2] = 0;
+			keystatus[KEY_INSERT] = 0;
 		}
 
 		ExtCheckKeys();
@@ -5157,9 +5178,9 @@ void overheadeditor(void)
 				printmessage16("Arrow must be inside a sector before entering 3D mode.");
 		}
 
-		if (keystatus[1] > 0)
+		if (keystatus[KEY_ESCAPE] > 0)
 		{
-			keystatus[1] = 0;
+			keystatus[KEY_ESCAPE] = 0;
 			printmessage16("(N)ew, (L)oad/from (G)RP, (S)ave, save (A)s, (Q)uit");
 			showframe();
 			bflushchars();
@@ -5174,9 +5195,9 @@ void overheadeditor(void)
 
 				ch = bgetchar();
 
-				if (keystatus[1] > 0)
+				if (keystatus[KEY_ESCAPE] > 0)
 				{
-					keystatus[1] = 0;
+					keystatus[KEY_ESCAPE] = 0;
 					bad = 0;
 					printmessage16("");
 				}
@@ -5186,7 +5207,7 @@ void overheadeditor(void)
 					printmessage16("Are you sure you want to start a new board? (Y/N)");
 					showframe();
 					bflushchars(); ch = 0;
-					while (keystatus[1] == 0)
+					while (keystatus[KEY_ESCAPE] == 0)
 					{
 						if (handleevents()) {
 							if (quitevent) {
@@ -5442,7 +5463,7 @@ void overheadeditor(void)
 						startsectnum = cursectnum;
 					}
 					showframe();
-					keystatus[0x1c] = 0;
+					keystatus[KEY_ENTER] = 0;
 				}
 				else if (ch == 'a' || ch == 'A')  //A
 				{
@@ -5513,7 +5534,7 @@ void overheadeditor(void)
 
 						ch = bgetchar();
 
-						if (keystatus[1] > 0) bad = 1;
+						if (keystatus[KEY_ESCAPE] > 0) bad = 1;
 						else if (ch == 13) bad = 2;
 						else if (ch > 0) {
 							if (i > 0 && (ch == 8 || ch == 127)) {
@@ -5530,13 +5551,13 @@ void overheadeditor(void)
 					}
 					if (bad == 1)
 					{
-						keystatus[1] = 0;
+						keystatus[KEY_ESCAPE] = 0;
 						printmessage16("Operation cancelled");
 						showframe();
 					}
 					if (bad == 2)
 					{
-						keystatus[0x1c] = 0;
+						keystatus[KEY_ENTER] = 0;
 
 						strcat(filename, ".map");
 						Bsprintf(buffer,"Saving to %s...",filename);
@@ -5598,7 +5619,7 @@ void overheadeditor(void)
 					printmessage16("Are you sure you want to quit?");
 					showframe();
 					bflushchars();
-					while (keystatus[1] == 0)
+					while (keystatus[KEY_ESCAPE] == 0)
 					{
 						if (handleevents()) {
 							if (quitevent) quitevent = 0;
@@ -5612,7 +5633,7 @@ void overheadeditor(void)
 							if (asksave) {
 								printmessage16("Save changes?");
 								showframe();
-								while (keystatus[1] == 0)
+								while (keystatus[KEY_ESCAPE] == 0)
 								{
 									if (handleevents()) {
 										if (quitevent) break;	// like saying no
