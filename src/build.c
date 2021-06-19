@@ -596,8 +596,8 @@ void editinput(void)
 	{                         //ENGINE calculates angvel for you
 		doubvel = synctics;
 		//Lt. shift makes turn velocity 50% faster
-		if (keystatus[KEY_L_SHIFT] > 0)  
-			doubvel += (synctics>>1);
+		// if (keystatus[KEY_L_SHIFT] > 0)  
+		// 	doubvel += (synctics>>1);
 		ang += ((angvel*doubvel)>>4);
 		ang = (ang+2048)&2047;
 	}
@@ -607,8 +607,8 @@ void editinput(void)
 	{
 		doubvel = synctics;
 		//Lt. shift doubles forward velocity
-		if (keystatus[KEY_L_SHIFT] > 0)
-			doubvel += synctics;
+		// if (keystatus[KEY_L_SHIFT] > 0)
+		// 	doubvel += synctics;
 		xvect = 0, yvect = 0;
 		if (vel != 0)
 		{
@@ -647,7 +647,7 @@ void editinput(void)
 			goalz += mousz;
 
 			//A (stand high)
-			if (keystatus[KEY_A] > 0)
+			if (keystatus[KEY_Q] > 0)
 			{
 				if (keystatus[KEY_L_CTRL] > 0)
 					horiz = max(-100,horiz-((keystatus[KEY_L_SHIFT]+1)*synctics*2));
@@ -684,7 +684,7 @@ void editinput(void)
 		else
 		{
 			goalz = posz;
-			if (keystatus[KEY_A] > 0)
+			if (keystatus[KEY_Q] > 0)
 			{
 				if (keystatus[KEY_L_CTRL] > 0) {
 					horiz = max(-100,horiz-((keystatus[KEY_L_SHIFT]+1)*synctics*2));
@@ -694,7 +694,7 @@ void editinput(void)
 					else
 					{
 						zlock += (4<<8);
-						keystatus[KEY_A] = 0;
+						keystatus[KEY_Q] = 0;
 					}
 				}
 			}
@@ -1644,16 +1644,17 @@ void editinput(void)
 			asksave = 1;
 		}
 
-		smooshyalign = keystatus[KEY_KP5];
+		// Begin keypad stuff
+		smooshyalign = keystatus[KEY_R_CTRL]|keystatus[KEY_L_CTRL];
 		repeatpanalign = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 		// I don't want to use the keypad so I need to remap these to something at some point
-		if ((keystatus[KEY_KP4_LEFT]|keystatus[KEY_KP6_RIGHT]) > 0)  // 4 & 6 (keypad)
+		if ((keystatus[KEY_LEFT]|keystatus[KEY_RIGHT]) > 0)  // 4 & 6 (keypad)
 		{
 			if ((repeatcountx == 0) || (repeatcountx > 16))
 			{
 				changedir = 0;
-				if (keystatus[0x4b] > 0) changedir = -1;
-				if (keystatus[0x4d] > 0) changedir = 1;
+				if (keystatus[KEY_LEFT] > 0) changedir = -1;
+				if (keystatus[KEY_RIGHT] > 0) changedir = 1;
 
 				if ((searchstat == 0) || (searchstat == 4))
 				{
@@ -1683,13 +1684,13 @@ void editinput(void)
 		else
 			repeatcountx = 0;
 
-		if ((keystatus[KEY_KP8_UP]|keystatus[KEY_KP2_DOWN]) > 0)  // 2 & 8 (keypad)
+		if ((keystatus[KEY_UP]|keystatus[KEY_DOWN]) > 0)  // 2 & 8 (keypad)
 		{
 			if ((repeatcounty == 0) || (repeatcounty > 16))
 			{
 				changedir = 0;
-				if (keystatus[0x48] > 0) changedir = -1;
-				if (keystatus[0x50] > 0) changedir = 1;
+				if (keystatus[KEY_UP] > 0) changedir = -1;
+				if (keystatus[KEY_DOWN] > 0) changedir = 1;
 
 				if ((searchstat == 0) || (searchstat == 4))
 				{
@@ -1922,9 +1923,9 @@ void editinput(void)
 			keystatus[KEY_P] = 0;
 		}
 		// Alt-D  (adjust sprite[].clipdist)
-		if (keystatus[KEY_D] != 0) 
+		if (keystatus[KEY_Y] != 0)
 		{
-			keystatus[KEY_D] = 0;
+			keystatus[KEY_Y] = 0;
 			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)
 			{
 				if (searchstat == 3)
@@ -2273,7 +2274,7 @@ void editinput(void)
 			}
 		}
 		// S (insert sprite) (3D)
-		if (keystatus[KEY_S] > 0)
+		if (keystatus[KEY_X] > 0)
 		{
 			dax = 16384;
 			day = divscale14(searchx-(xdim>>1),xdim>>1);
@@ -2381,7 +2382,7 @@ void editinput(void)
 				asksave = 1;
 			}
 
-			keystatus[KEY_S] = 0;
+			keystatus[KEY_X] = 0;
 		}
 		// delete sprite
 		if (keystatus[KEY_DELETE] > 0)
@@ -4026,7 +4027,7 @@ void overheadeditor(void)
 		}
 
 		// A Z zoom in out
-		if (((keystatus[KEY_A] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
+		if (((keystatus[KEY_Q] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
 		if (((keystatus[KEY_Z] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
 
 		// G (grid on/off)
@@ -4166,7 +4167,7 @@ void overheadeditor(void)
 		}
 
 		// ALT-S
-		if (((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])&keystatus[KEY_S]) > 0) 
+		if (((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])&keystatus[KEY_X]) > 0) 
 		{
 			if ((linehighlight >= 0) && (wall[linehighlight].nextwall == -1))
 			{
@@ -4187,10 +4188,10 @@ void overheadeditor(void)
 					printmessage16("Inner loop made into new sector.");
 				}
 			}
-			keystatus[KEY_S] = 0;
+			keystatus[KEY_X] = 0;
 		}
 		// S
-		else if (keystatus[KEY_S] > 0)
+		else if (keystatus[KEY_X] > 0)
 		{
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -4274,7 +4275,7 @@ void overheadeditor(void)
 				asksave = 1;
 			}
 
-			keystatus[KEY_S] = 0;
+			keystatus[KEY_X] = 0;
 		}
 
 		// C (make circle of points)
@@ -7042,20 +7043,40 @@ void keytimerstuff(void)
 	if (totalclock == ltotalclock) return;
 	ltotalclock=totalclock;
 
-	if (keystatus[buildkeys[5]] == 0)
+	// Strafing
+	// if (keystatus[KEY_R_CTRL] == 0)
+	// {
+	// 	if (keystatus[KEY_LEFT] > 0) angvel = max(angvel-16,-128);
+	// 	if (keystatus[KEY_RIGHT] > 0) angvel = min(angvel+16,127);
+	// }
+	// else
+	// {
+	// 	if (keystatus[KEY_LEFT] > 0) svel = min(svel+8,127);
+	// 	if (keystatus[KEY_RIGHT] > 0) svel = max(svel-8,-128);
+	// }
+	// if (keystatus[KEY_UP] > 0) vel = min(vel+8,127);
+	// if (keystatus[KEY_DOWN] > 0) vel = max(vel-8,-128);
+	
+	// if (keystatus[KEY_COMMA] > 0) svel = min(svel+8,127);
+	// if (keystatus[KEY_PERIOD] > 0) svel = max(svel-8,-128);
+
+	// Tank controls
+	if (keystatus[KEY_L_SHIFT] == 0)
 	{
-		if (keystatus[buildkeys[2]] > 0) angvel = max(angvel-16,-128);
-		if (keystatus[buildkeys[3]] > 0) angvel = min(angvel+16,127);
-	}
-	else
+		if (keystatus[KEY_A] > 0) angvel = max(angvel-16,-128);
+		if (keystatus[KEY_D] > 0) angvel = min(angvel+16,127);
+	} 
+	else 
 	{
-		if (keystatus[buildkeys[2]] > 0) svel = min(svel+8,127);
-		if (keystatus[buildkeys[3]] > 0) svel = max(svel-8,-128);
+		if (keystatus[KEY_A] > 0) svel = min(svel+8,127);
+		if (keystatus[KEY_D] > 0) svel = max(svel-8,-128);
 	}
-	if (keystatus[buildkeys[0]] > 0) vel = min(vel+8,127);
-	if (keystatus[buildkeys[1]] > 0) vel = max(vel-8,-128);
-	if (keystatus[buildkeys[12]] > 0) svel = min(svel+8,127);
-	if (keystatus[buildkeys[13]] > 0) svel = max(svel-8,-128);
+	
+	if (keystatus[KEY_W] > 0) vel = min(vel+8,127);
+	if (keystatus[KEY_S] > 0) vel = max(vel-8,-128);
+
+
+
 
 	if (angvel < 0) angvel = min(angvel+12,0);
 	if (angvel > 0) angvel = max(angvel-12,0);
