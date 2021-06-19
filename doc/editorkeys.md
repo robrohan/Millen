@@ -54,7 +54,7 @@ H           = Set high tag (ALT for sprites and walls)
 | F2         |             | 2D view                    |                      |
 | F3         | 3D view     |                            |                      |
 | B          | Blocking    | Toggle blocking status     |                      |
-| F          |             | Flip alignment             |                      |
+| F          |             | Flip alignment             | ALT make first wall  |
 | O          |             | Sprite wall / wall orient  |                      |
 | SCROLLLOCK | Start Pos   |                            |                      |
 | F5         | Sector info |                            |                      |
