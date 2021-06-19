@@ -4,7 +4,6 @@
 #define NUMKEYS 20
 
 extern char option[NUMOPTIONS];
-extern int keys[NUMKEYS];
 extern int xdimgame, ydimgame, bppgame;
 extern int forcesetup;
 
