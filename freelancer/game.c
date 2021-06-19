@@ -8,11 +8,11 @@
 #include "build.h"
 #include "cache1d.h"
 #include "kdmsound.h"
+#include "keys.h"
 #include "mmulti.h"
 #include "names.h"
 #include "osd.h"
 #include "pragmas.h"
-#include "keys.h"
 
 #include "baselayer.h"
 
@@ -115,18 +115,16 @@ static int fvel2, svel2, avel2;
 // These options are what wind up in the config file
 // positions are kind of random
 char option[NUMOPTIONS] = {
-    1, 
-    1, 
+    1,
+    1,
     1, // music
     3, // mouse &1 joystick &2
-    0, 
-    0, 
-    1, 
-    (4 << 4) | 1 | 2 | 4  // sample rate >>4
+    0,
+    0,
+    1,
+    (4 << 4) | 1 | 2 | 4 // sample rate >>4
 };
-int xdimgame = 1024, 
-    ydimgame = 768, 
-    bppgame = 24;
+int xdimgame = 1024, ydimgame = 768, bppgame = 24;
 int forcesetup = 1;
 
 static int digihz[8] = {6000, 8000, 11025, 16000, 22050, 32000, 44100, 48000};
@@ -3620,6 +3618,7 @@ void bombexplode(int i)
     deletesprite((short)i);
 }
 
+// All game logic here?
 void processinput(short snum)
 {
     int oldposx, oldposy, nexti;
@@ -3863,7 +3862,7 @@ void processinput(short snum)
             waterfountainwall[snum] = -1;
         }
 
-    if ((ssync[snum].bits & 1024) > 0) // Space bar
+    if ((ssync[snum].bits & 1024) > 0) // Space bar (use key)
     {
         // Continuous triggers...
 
@@ -5143,6 +5142,7 @@ void domovethings(void)
     checkmasterslaveswitch();
 }
 
+// Mostly player movement
 void getinput(void)
 {
     unsigned char ch, keystate, *ptr;
@@ -5150,7 +5150,7 @@ void getinput(void)
     int mousx, mousy, bstatus;
 
     // if normal game keys active
-    if (typemode == 0) 
+    if (typemode == 0)
     {
         // Enter = draw status bar
         if (keystatus[KEY_ENTER])
@@ -5192,13 +5192,13 @@ void getinput(void)
     }
 
     // Basic movement
-    if (keystatus[KEY_W])  // forwards
+    if (keystatus[KEY_W]) // forwards
         fvel = min(fvel + 8 * TICSPERFRAME, 127);
     if (keystatus[KEY_S]) // backwards
         fvel = max(fvel - 8 * TICSPERFRAME, -128);
     if (keystatus[KEY_A]) // Strafe left
         svel = min(svel + 8 * TICSPERFRAME, 127);
-    if (keystatus[KEY_D])  // Strafe right
+    if (keystatus[KEY_D]) // Strafe right
         svel = max(svel - 8 * TICSPERFRAME, -128);
 
     if (avel < 0)
@@ -5280,25 +5280,25 @@ void getinput(void)
     loc.bits = (locselectedgun << 13);
     if (typemode == 0) // if normal game keys active
     {
-        loc.bits |= (keystatus[KEY_M] << 9);             // M (be master)
+        loc.bits |= (keystatus[KEY_M] << 9);                       // M (be master)
         loc.bits |= ((keystatus[KEY_RETURN_KP_ENTER] == 1) << 12); // Map mode
     }
-    loc.bits |= keystatus[KEY_Q];                              // Stand high
-    loc.bits |= (keystatus[KEY_Z] << 1);                       // Stand low
+    loc.bits |= keystatus[KEY_Q];                                // Stand high
+    loc.bits |= (keystatus[KEY_Z] << 1);                         // Stand low
     loc.bits |= (keystatus[KEY_PLUS] << 4);                      // Zoom in
-    loc.bits |= (keystatus[KEY_MINUS] << 5);                      // Zoom out
-    loc.bits |= (keystatus[KEY_L_SHIFT] << 8);                       // Run
-    loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                      // Look up
-    loc.bits |= (keystatus[KEY_PG_UP] << 3);                      // Look down
-    loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);               // Space (Use Key)
-    loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);               // Shoot
+    loc.bits |= (keystatus[KEY_MINUS] << 5);                     // Zoom out
+    loc.bits |= (keystatus[KEY_L_SHIFT] << 8);                   // Run
+    loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
+    loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
+    loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);             // Space (Use Key)
+    loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);            // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
     loc.bits |= (((bstatus & 1) > (oldmousebstatus & 1)) << 11); // Shoot
 
     // Allow continous fire with mouse for chain gun
     oldmousebstatus = bstatus;
     if (((loc.bits & 2048) > 0) && (locselectedgun == 0))
-        oldmousebstatus &= ~1; 
+        oldmousebstatus &= ~1;
 
     // if (option[3] & 2) {
     // 	if (joynumaxes == 2) {
@@ -5327,7 +5327,7 @@ void getinput(void)
     */
 
     // V - 3rd person view
-    if (keystatus[KEY_V]) 
+    if (keystatus[KEY_V])
     {
         keystatus[KEY_V] = 0;
         if (cameradist < 0)
@@ -5338,7 +5338,7 @@ void getinput(void)
     }
 
     // typemode 0 == command mode
-    if (typemode == 0) 
+    if (typemode == 0)
     {
         if (keystatus[KEY_P]) // P
         {
@@ -5354,7 +5354,7 @@ void getinput(void)
             if (keystatus[KEY_KP_PLUS]) // Keypad +
                 visibility = max(visibility - (visibility >> 3), 128);
         }
-        
+
         // Typing mode
         if (keystatus[KEY_TAB])
         {
