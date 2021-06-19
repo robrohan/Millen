@@ -136,8 +136,6 @@ static unsigned char scantoascwithshift[128] =
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
 
-
-
 unsigned char changechar(unsigned char dachar, int dadir, unsigned char smooshyalign, unsigned char boundcheck);
 int adjustmark(int *xplc, int *yplc, short danumwalls);
 int checkautoinsert(int dax, int day, short danumwalls);
@@ -524,6 +522,7 @@ void showmouse(void)
 	drawline256((searchx  )<<12, (searchy-1)<<12, (searchx  )<<12, (searchy-5)<<12, whitecol);
 }
 
+// 3D Editor View
 void editinput(void)
 {
 	unsigned char smooshyalign, repeatpanalign, *ptr, buffer[80];
@@ -742,10 +741,9 @@ void editinput(void)
 	{
 		if ((bstatus&1) > 0)
 			searchit = 0;
-		// if (keystatus[0x4a] > 0)  // - on the keypad
-		if (keystatus[KEY_MINUS] > 0)  // - on the keypad
+		// - 
+		if (keystatus[KEY_MINUS] > 0)
 		{
-			// keystatus[0x4a] = 0;
 			keystatus[KEY_MINUS] = 0;
 			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT (LALT RALT)
 			{
@@ -831,8 +829,8 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		// if (keystatus[0x4e] > 0)  // + on the keypad 
-		if (keystatus[KEY_PLUS] > 0)  // + on the keypad 
+		// +
+		if (keystatus[KEY_PLUS] > 0)
 		{
 			// keystatus[0x4e] = 0;
 			keystatus[KEY_PLUS] = 0;
@@ -919,7 +917,8 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		if (keystatus[KEY_PG_UP] > 0) // PGUP
+		 // PGUP
+		if (keystatus[KEY_PG_UP] > 0)
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -1034,8 +1033,8 @@ void editinput(void)
 			asksave = 1;
 			keystatus[0xc9] = 0;
 		}
-		// if (keystatus[0xd1] > 0) // PGDN
-		if (keystatus[KEY_PG_DOWN] > 0) // PGDN
+		// PGDN
+		if (keystatus[KEY_PG_DOWN] > 0)
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -1648,7 +1647,7 @@ void editinput(void)
 		smooshyalign = keystatus[KEY_KP5];
 		repeatpanalign = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 		// I don't want to use the keypad so I need to remap these to something at some point
-		if ((keystatus[0x4b]|keystatus[0x4d]) > 0)  // 4 & 6 (keypad)
+		if ((keystatus[KEY_KP4_LEFT]|keystatus[KEY_KP6_RIGHT]) > 0)  // 4 & 6 (keypad)
 		{
 			if ((repeatcountx == 0) || (repeatcountx > 16))
 			{
@@ -1684,7 +1683,7 @@ void editinput(void)
 		else
 			repeatcountx = 0;
 
-		if ((keystatus[0x48]|keystatus[0x50]) > 0)  // 2 & 8 (keypad)
+		if ((keystatus[KEY_KP8_UP]|keystatus[KEY_KP2_DOWN]) > 0)  // 2 & 8 (keypad)
 		{
 			if ((repeatcounty == 0) || (repeatcounty > 16))
 			{
@@ -2273,7 +2272,7 @@ void editinput(void)
 				}
 			}
 		}
-		//S (insert sprite) (3D)
+		// S (insert sprite) (3D)
 		if (keystatus[KEY_S] > 0)
 		{
 			dax = 16384;
@@ -2398,27 +2397,28 @@ void editinput(void)
 		
 		// Draw extra data into the editor
 		//F5,F6
-		if ((keystatus[KEY_F5]|keystatus[KEY_F6]) > 0)  
-		{
-			switch(searchstat)
-			{
-				case 1: case 2: ExtShowSectorData(searchsector); break;
-				case 0: case 4: ExtShowWallData(searchwall); break;
-				case 3: ExtShowSpriteData(searchwall); break;
-			}
-			keystatus[KEY_F5] = 0, keystatus[KEY_F6] = 0;
-		}
-		//F7,F8
-		if ((keystatus[KEY_F7]|keystatus[KEY_F8]) > 0)  
-		{
-			switch(searchstat)
-			{
-				case 1: case 2: ExtEditSectorData(searchsector); break;
-				case 0: case 4: ExtEditWallData(searchwall); break;
-				case 3: ExtEditSpriteData(searchwall); break;
-			}
-			keystatus[KEY_F7] = 0, keystatus[KEY_F8] = 0;
-		}
+		// Curently don't work in 3d view
+		// if ((keystatus[KEY_F5]|keystatus[KEY_F6]) > 0)  
+		// {
+		// 	switch(searchstat)
+		// 	{
+		// 		case 1: case 2: ExtShowSectorData(searchsector); break;
+		// 		case 0: case 4: ExtShowWallData(searchwall); break;
+		// 		case 3: ExtShowSpriteData(searchwall); break;
+		// 	}
+		// 	keystatus[KEY_F5] = 0, keystatus[KEY_F6] = 0;
+		// }
+		// //F7,F8
+		// if ((keystatus[KEY_F7]|keystatus[KEY_F8]) > 0)  
+		// {
+		// 	switch(searchstat)
+		// 	{
+		// 		case 1: case 2: ExtEditSectorData(searchsector); break;
+		// 		case 0: case 4: ExtEditWallData(searchwall); break;
+		// 		case 3: ExtEditSpriteData(searchwall); break;
+		// 	}
+		// 	keystatus[KEY_F7] = 0, keystatus[KEY_F8] = 0;
+		// }
 	}
 	
 	// if (keystatus[buildkeys[14]] > 0)  // Enter
@@ -2760,6 +2760,7 @@ int drawtilescreen(int pictopleft, int picbox)
 	return(0);
 }
 
+// 2D Editor View
 void overheadeditor(void)
 {
 	char buffer[80];
@@ -4024,6 +4025,7 @@ void overheadeditor(void)
 			posy = mousyplc;
 		}
 
+		// A Z zoom in out
 		if (((keystatus[KEY_A] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
 		if (((keystatus[KEY_Z] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
 
@@ -4187,7 +4189,8 @@ void overheadeditor(void)
 			}
 			keystatus[KEY_S] = 0;
 		}
-		else if (keystatus[KEY_S] > 0)  //S
+		// S
+		else if (keystatus[KEY_S] > 0)
 		{
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -4290,19 +4293,19 @@ void overheadeditor(void)
 		}
 
 		// -
-		if (keystatus[KEY_KP_MINUS] > 0)
+		if (keystatus[KEY_MINUS] > 0)
 		{
 			if (circlepoints > 1)
 				circlepoints--;
-			keystatus[KEY_KP_MINUS] = 0;
+			keystatus[KEY_MINUS] = 0;
 		}
 
 		// +
-		if (keystatus[KEY_KP_PLUS] > 0)
+		if (keystatus[KEY_PLUS] > 0)
 		{
 			if (circlepoints < 63)
 				circlepoints++;
-			keystatus[KEY_KP_PLUS] = 0;
+			keystatus[KEY_PLUS] = 0;
 		}
 
 		bad = (keystatus[KEY_SPACE] > 0);  //Gotta do this to save lots of 3 spaces!
@@ -5001,9 +5004,9 @@ void overheadeditor(void)
 			}
 		}
 
-		// right control + delete
+		// right control + delete //sector delete
 		if ((keystatus[KEY_DELETE] > 0) && (keystatus[KEY_R_CTRL] > 0) && (numwalls >= 0))
-		{                                                      //sector delete
+		{
 			keystatus[KEY_DELETE] = 0;
 
 			sucksect = -1;
@@ -5168,15 +5171,15 @@ void overheadeditor(void)
 		lockclock += synctics;
 
 		// To sawp to 3d
-		if (keystatus[KEY_F2] > 0)
-		{
-			updatesector(posx,posy,&cursectnum);
-			if (cursectnum >= 0)
-				// keystatus[buildkeys[14]] = 2;
-				keystatus[KEY_F2] = 2;
-			else
-				printmessage16("Arrow must be inside a sector before entering 3D mode.");
-		}
+		// if (keystatus[KEY_F2] > 0)
+		// {
+		// 	updatesector(posx,posy,&cursectnum);
+		// 	if (cursectnum >= 0)
+		// 		// keystatus[buildkeys[14]] = 2;
+		// 		keystatus[KEY_F2] = 2;
+		// 	else
+		// 		printmessage16("Arrow must be inside a sector before entering 3D mode.");
+		// }
 
 		if (keystatus[KEY_ESCAPE] > 0)
 		{
@@ -6256,7 +6259,6 @@ short getnumber256(char namestart[80], short num, int maxnumber, char sign)
 
 	return((short)oldnum);
 }
-
 
 void clearfilenames(void)
 {
