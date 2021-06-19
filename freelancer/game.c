@@ -8,11 +8,11 @@
 #include "build.h"
 #include "cache1d.h"
 #include "kdmsound.h"
+#include "keys.h"
 #include "mmulti.h"
 #include "names.h"
 #include "osd.h"
 #include "pragmas.h"
-#include "keys.h"
 
 #include "baselayer.h"
 
@@ -114,41 +114,17 @@ static int fvel2, svel2, avel2;
 
 // These options are what wind up in the config file
 // positions are kind of random
-
 char option[NUMOPTIONS] = {
-    1, 
-    1, 
+    1,
+    1,
     1, // music
     3, // mouse &1 joystick &2
-    0, 
-    0, 
-    1, 
-    (4 << 4) | 1 | 2 | 4  // sample rate >>4
+    0,
+    0,
+    1,
+    (4 << 4) | 1 | 2 | 4 // sample rate >>4
 };
-// int keys[NUMKEYS] = {
-//     // up  dn   lf   rt   ..   ..   ..   ..    sp
-//     0xc8, 0xd0, 0xcb, 0xcd, 0x2a, 0x9d, 0x1d, 0x39,
-//     // a     z   ..   pgu   ,    .
-//     0x1e, 0x2c, 0xd1, 0xc9, 0x33, 0x34,
-//     // ret  ent  =   -   tb  ..
-//     0x9c, 0x1c, 0xd, 0xc, 0xf, 0x2b};
-
-int keys[NUMKEYS] = {
-    // up    dn     lf      rt   ..    ..     ..     sp
-    // 0     1      2      3
-    KEY_W, KEY_S, KEY_COMMA, KEY_PERIOD,
-    //  4            5          6          7
-    KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
-    // a     z     pgd   pgu       ,           .
-    // 8     9     10    11       12    13
-    KEY_Q, KEY_Z, 0xd1, 0xc9,   KEY_A, KEY_D,
-    // ret    ent     =     -    tb       ..
-    //14      15      16   17    18      19  
-    0x9c, KEY_ENTER, 0xd, 0xc, KEY_TAB, 0x2b};
-
-int xdimgame = 1024, 
-    ydimgame = 768, 
-    bppgame = 24;
+int xdimgame = 1024, ydimgame = 768, bppgame = 24;
 int forcesetup = 1;
 
 static int digihz[8] = {6000, 8000, 11025, 16000, 22050, 32000, 44100, 48000};
@@ -628,7 +604,11 @@ int app_main(int argc, char const *const argv[])
             }
             if (asperr == 0)
             {
-                chdir(dirpath);
+                int worked = chdir(dirpath);
+                if (worked == -1)
+                {
+                    buildprintf("Couldn't change directoires");
+                }
             }
             free(supportdir);
         }
@@ -3642,6 +3622,7 @@ void bombexplode(int i)
     deletesprite((short)i);
 }
 
+// All game logic here?
 void processinput(short snum)
 {
     int oldposx, oldposy, nexti;
@@ -3885,7 +3866,7 @@ void processinput(short snum)
             waterfountainwall[snum] = -1;
         }
 
-    if ((ssync[snum].bits & 1024) > 0) // Space bar
+    if ((ssync[snum].bits & 1024) > 0) // Space bar (use key)
     {
         // Continuous triggers...
 
@@ -5165,17 +5146,20 @@ void domovethings(void)
     checkmasterslaveswitch();
 }
 
+// Mostly player movement
 void getinput(void)
 {
     unsigned char ch, keystate, *ptr;
     int i, j, k;
     int mousx, mousy, bstatus;
 
-    if (typemode == 0) // if normal game keys active
+    // if normal game keys active
+    if (typemode == 0)
     {
-        if (keystatus[keys[15]])  // Enter, why is this so convoluted?
+        // Enter = draw status bar
+        if (keystatus[KEY_ENTER])
         {
-            keystatus[keys[15]] = 0;
+            keystatus[KEY_ENTER] = 0;
 
             screenpeek = connectpoint2[screenpeek];
             if (screenpeek < 0)
@@ -5183,8 +5167,10 @@ void getinput(void)
             drawstatusbar(screenpeek); // Andy did this
         }
 
+        // Key 6,5,4,3,2,1,..Numlock,and something = select weapon
+        // TODO: fix this
         for (i = 7; i >= 0; i--)
-            if (keystatus[i + 2]) // you hate people don't you
+            if (keystatus[i + 2])
             {
                 keystatus[i + 2] = 0;
                 locselectedgun = i;
@@ -5193,29 +5179,30 @@ void getinput(void)
     }
 
     // KEYTIMERSTUFF
-    if (!keystatus[keys[5]]) // right control key?
+    // Tank controls - turn vs. strafe
+    if (!keystatus[KEY_R_CTRL])
     {
-        if (keystatus[keys[2]])
+        if (keystatus[KEY_COMMA])
             avel = max(avel - 16 * TICSPERFRAME, -128);
-        if (keystatus[keys[3]])
+        if (keystatus[KEY_PERIOD])
             avel = min(avel + 16 * TICSPERFRAME, 127);
     }
     else
     {
-        if (keystatus[keys[2]])
+        if (keystatus[KEY_COMMA])
             svel = min(svel + 8 * TICSPERFRAME, 127);
-        if (keystatus[keys[3]])
+        if (keystatus[KEY_PERIOD])
             svel = max(svel - 8 * TICSPERFRAME, -128);
     }
 
     // Basic movement
-    if (keystatus[keys[0]])  // forwards
+    if (keystatus[KEY_W]) // forwards
         fvel = min(fvel + 8 * TICSPERFRAME, 127);
-    if (keystatus[keys[1]]) // backwards
+    if (keystatus[KEY_S]) // backwards
         fvel = max(fvel - 8 * TICSPERFRAME, -128);
-    if (keystatus[keys[12]]) // Strafe left
+    if (keystatus[KEY_A]) // Strafe left
         svel = min(svel + 8 * TICSPERFRAME, 127);
-    if (keystatus[keys[13]])  // Strafe right
+    if (keystatus[KEY_D]) // Strafe right
         svel = max(svel - 8 * TICSPERFRAME, -128);
 
     if (avel < 0)
@@ -5231,25 +5218,26 @@ void getinput(void)
     if (fvel > 0)
         fvel = max(fvel - 2 * TICSPERFRAME, 0);
 
+    // ?option 4?
     if ((option[4] == 0) && (numplayers >= 2))
     {
-        if (!keystatus[0x4f]) // key pad 1 :-/
+        if (!keystatus[KEY_KP1_END]) // key pad 1 :-/
         {
-            if (keystatus[0x4b])
+            if (keystatus[KEY_KP4_LEFT])
                 avel2 = max(avel2 - 16 * TICSPERFRAME, -128);
-            if (keystatus[0x4d])
+            if (keystatus[KEY_KP6_RIGHT])
                 avel2 = min(avel2 + 16 * TICSPERFRAME, 127);
         }
         else
         {
-            if (keystatus[0x4b])
+            if (keystatus[KEY_KP4_LEFT])
                 svel2 = min(svel2 + 8 * TICSPERFRAME, 127);
-            if (keystatus[0x4d])
+            if (keystatus[KEY_KP6_RIGHT])
                 svel2 = max(svel2 - 8 * TICSPERFRAME, -128);
         }
-        if (keystatus[0x48])
+        if (keystatus[KEY_KP8_UP])
             fvel2 = min(fvel2 + 8 * TICSPERFRAME, 127);
-        if (keystatus[0x4c])
+        if (keystatus[KEY_KP5])
             fvel2 = max(fvel2 - 8 * TICSPERFRAME, -128);
 
         if (avel2 < 0)
@@ -5268,9 +5256,9 @@ void getinput(void)
 
     // rotate the camera about the z axis
     oscreentilt = screentilt;
-    if (keystatus[0x1a]) // open brace
+    if (keystatus[KEY_OPEN_BRACE]) // open brace
         screentilt += ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
-    if (keystatus[0x1b]) // close brace
+    if (keystatus[KEY_CLOSE_BRACE]) // close brace
         screentilt -= ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
 
     i = (TICSPERFRAME << 1);
@@ -5279,7 +5267,9 @@ void getinput(void)
         screentilt = ((screentilt + ksgn(screentilt - 1024)) & 2047);
         i--;
     }
-    if (keystatus[0x28])
+
+    // Why?
+    if (keystatus[KEY_QUOTE])
         screentilt = 1536;
 
     loc.fvel = min(max(fvel, -128 + 8), 127 - 8);
@@ -5288,30 +5278,31 @@ void getinput(void)
 
     getmousevalues(&mousx, &mousy, &bstatus);
     loc.avel = min(max(loc.avel + (mousx << 3), -128), 127);
-    // Stop moving via the mouse :-/ who thought that was ever a good idea?
+    // Stop doing forward movment via the mouse
     // loc.fvel = min(max(loc.fvel-(mousy<<3),-128),127);
 
     loc.bits = (locselectedgun << 13);
     if (typemode == 0) // if normal game keys active
     {
-        loc.bits |= (keystatus[0x32] << 9);             // M (be master)
-        loc.bits |= ((keystatus[keys[14]] == 1) << 12); // Map mode
+        loc.bits |= (keystatus[KEY_M] << 9);                       // M (be master)
+        loc.bits |= ((keystatus[KEY_RETURN_KP_ENTER] == 1) << 12); // Map mode
     }
-    loc.bits |= keystatus[keys[8]];                              // Stand high
-    loc.bits |= (keystatus[keys[9]] << 1);                       // Stand low
-    loc.bits |= (keystatus[keys[16]] << 4);                      // Zoom in
-    loc.bits |= (keystatus[keys[17]] << 5);                      // Zoom out
-    loc.bits |= (keystatus[keys[4]] << 8);                       // Run
-    loc.bits |= (keystatus[keys[10]] << 2);                      // Look up
-    loc.bits |= (keystatus[keys[11]] << 3);                      // Look down
-    loc.bits |= ((keystatus[keys[7]] == 1) << 10);               // Space (Use Key)
-    loc.bits |= ((keystatus[keys[6]] == 1) << 11);               // Shoot
+    loc.bits |= keystatus[KEY_Q];                                // Stand high
+    loc.bits |= (keystatus[KEY_Z] << 1);                         // Stand low
+    loc.bits |= (keystatus[KEY_PLUS] << 4);                      // Zoom in
+    loc.bits |= (keystatus[KEY_MINUS] << 5);                     // Zoom out
+    loc.bits |= (keystatus[KEY_L_SHIFT] << 8);                   // Run
+    loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
+    loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
+    loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);             // Space (Use Key)
+    loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);            // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
     loc.bits |= (((bstatus & 1) > (oldmousebstatus & 1)) << 11); // Shoot
 
+    // Allow continous fire with mouse for chain gun
     oldmousebstatus = bstatus;
     if (((loc.bits & 2048) > 0) && (locselectedgun == 0))
-        oldmousebstatus &= ~1; // Allow continous fire with mouse for chain gun
+        oldmousebstatus &= ~1;
 
     // if (option[3] & 2) {
     // 	if (joynumaxes == 2) {
@@ -5338,10 +5329,11 @@ void getinput(void)
             printscreeninterrupt();
         }
     */
-    if (keystatus[0x2f]) // V
+
+    // V - 3rd person view
+    if (keystatus[KEY_V])
     {
-        // 3rd person view
-        keystatus[0x2f] = 0;
+        keystatus[KEY_V] = 0;
         if (cameradist < 0)
             cameradist = 0;
         else
@@ -5349,26 +5341,28 @@ void getinput(void)
         cameraang = 0;
     }
 
-    if (typemode == 0) // if normal game keys active
+    // typemode 0 == command mode
+    if (typemode == 0)
     {
-        if (keystatus[0x19]) // P
+        if (keystatus[KEY_P]) // P
         {
-            keystatus[0x19] = 0;
+            keystatus[KEY_P] = 0;
             parallaxtype++;
             if (parallaxtype > 2)
                 parallaxtype = 0;
         }
-        if (keystatus[0x38] | keystatus[0xb8]) // ALT
+        if (keystatus[KEY_L_ALT] | keystatus[KEY_R_ALT]) // ALT
         {
-            if (keystatus[0x4a]) // Keypad -
+            if (keystatus[KEY_KP_MINUS]) // Keypad -
                 visibility = min(visibility + (visibility >> 3), 16384);
-            if (keystatus[0x4e]) // Keypad +
+            if (keystatus[KEY_KP_PLUS]) // Keypad +
                 visibility = max(visibility - (visibility >> 3), 128);
         }
 
-        if (keystatus[keys[18]]) // Typing mode
+        // Typing mode
+        if (keystatus[KEY_TAB])
         {
-            keystatus[keys[18]] = 0;
+            keystatus[KEY_TAB] = 0;
             typemode = 1;
             bflushchars();
             keyfifoplc = keyfifoend; // Reset keyboard fifo
@@ -5376,6 +5370,7 @@ void getinput(void)
     }
     else
     {
+        // Should ignore typed charaters for game input
         while ((ch = bgetchar()))
         {
             if (ch == 8) // Backspace
@@ -5389,14 +5384,14 @@ void getinput(void)
             }
             else if (ch == 9) // tab
             {
-                keystatus[0xf] = 0;
+                keystatus[KEY_TAB] = 0;
                 typemode = 0;
                 break;
             }
             else if (ch == 13) // Either ENTER
             {
-                keystatus[0x1c] = 0;
-                keystatus[0x9c] = 0;
+                keystatus[KEY_ENTER] = 0;
+                keystatus[KEY_RETURN_KP_ENTER] = 0;
                 if (typemessageleng > 0)
                 {
                     packbuf[0] = 2; // Sending text is message type 4
@@ -5512,17 +5507,17 @@ void playback(void)
         }
         drawscreen(screenpeek, (totalclock - gotlastpacketclock) * (65536 / (TIMERINTSPERSECOND / MOVESPERSECOND)));
 
-        if (keystatus[keys[15]])
+        if (keystatus[KEY_ENTER])
         {
-            keystatus[keys[15]] = 0;
+            keystatus[KEY_ENTER] = 0;
             screenpeek = connectpoint2[screenpeek];
             if (screenpeek < 0)
                 screenpeek = connecthead;
             drawstatusbar(screenpeek); // Andy did this
         }
-        if (keystatus[keys[14]])
+        if (keystatus[KEY_RETURN_KP_ENTER])
         {
-            keystatus[keys[14]] = 0;
+            keystatus[KEY_RETURN_KP_ENTER] = 0;
             dimensionmode[screenpeek]++;
             if (dimensionmode[screenpeek] > 3)
                 dimensionmode[screenpeek] = 1;
