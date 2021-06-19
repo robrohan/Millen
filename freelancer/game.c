@@ -604,7 +604,11 @@ int app_main(int argc, char const *const argv[])
             }
             if (asperr == 0)
             {
-                chdir(dirpath);
+                int worked = chdir(dirpath);
+                if (worked == -1)
+                {
+                    buildprintf("Couldn't change directoires");
+                }
             }
             free(supportdir);
         }
