@@ -120,7 +120,7 @@ static struct {
 	{ "mousesensitivity", type_double, &msens,
 		"; Mouse sensitivity\n"
 	},
-	{ "keyforward", type_hex, &keys[0],
+	{ ";keyforward", type_hex, &keys[0],
 		"; Key Settings\n"
 		";  Here's a map of all the keyboard scan codes: NOTE: values are listed in hex!\n"
 		"; +---------------------------------------------------------------------------------------------+\n"

@@ -3,29 +3,6 @@
 
 // assumes US Keyboard :-/
 
-// #define KEY_UP 0xc8
-// #define KEY_DOWN 0xd0
-// #define KEY_LEFT 0xcb
-// #define KEY_RIGHT 0xcd
-
-// #define KEY_SPACE 0x1d
-
-// #define KEY_A 0x1e
-// #define KEY_Z 0x2c
-
-// #define KEY_PG_UP 0xc9
-
-// #define KEY_COMMA 0x33
-// #define KEY_PEROID 0x34
-
-// #define KEY_RETURN 0x9c
-// #define KEY_ENTER 0x1c
-
-// #define KEY_EQUALS 0xd
-// #define KEY_MINUS 0xc
-
-// #define KEY_TAB 0xf
-
 // X(Set 3) 	keycap
 #define KEY_GRAVE 0x29 // 	` ~
 #define KEY_ONE 0x02 // 	1 !
@@ -55,7 +32,8 @@
 #define KEY_OPEN_BRACE 0x1a // 	[ {
 #define KEY_CLOSE_BRACE 0x1b // 	] }
 #define KEY_PIPE 0x75 // 	\ |
-#define KEY_CAPSLOCK 0x1d // 	CapsLock
+// #define KEY_CAPSLOCK 0x1d // 	CapsLock
+#define KEY_CAPSLOCK 0x3a // 	CapsLock
 #define KEY_A 0x1e // 	A
 #define KEY_S 0x1f // 	S
 #define KEY_D 0x20 // 	D
@@ -78,61 +56,102 @@
 #define KEY_N 0x31 // 	N
 #define KEY_M 0x32 // 	M
 #define KEY_COMMA 0x33 // 	, <
-#define KEY_PEROID 0x34 // 	. >
+#define KEY_PERIOD 0x34 // 	. >
 #define KEY_QUESTION 0x35 // 	/ ?
 #define KEY_R_SHIFT 0x36 // 	RShift
-#define KEY_L_CTRL 0x38 // 	LCtrl
-#define KEY_L_ALT 0x71 // 	LAlt
+// #define KEY_L_CTRL 0x38 // 	LCtrl
+#define KEY_L_CTRL 0x1d // 	LCtrl
+// #define KEY_L_ALT 0x71 // 	LAlt
+#define KEY_L_ALT 0x38 // 	LAlt
 #define KEY_SPACE 0x39 // 	space
-#define KEY_R_ALT 0x72 // 	RAlt
-#define KEY_R_CTRL 0x3a // 	RCtrl
-#define KEY_INSERT 0x7b // 	Insert
-#define KEY_DELETE 0x79 // 	Delete
-#define KEY_HOME 0x7f // 	Home
-#define KEY_END 0x7a // 	End
-#define KEY_PG_UP 0x6f // 	PgUp
-#define KEY_PG_DOWN 0x7e // 	PgDn
-#define KEY_LEFT 0x56 // 	Left
-#define KEY_UP 0x78 // 	Up
-#define KEY_DOWN 0x55 // 	Down
-#define KEY_RIGHT 0x7d // 	Right
-#define KEY_NUMLOCK 0x01 // 	NumLock
+// #define KEY_R_ALT 0x72 // 	RAlt
+#define KEY_R_ALT 0xb8 // 	RAlt
+// #define KEY_R_CTRL 0x3a // 	RCtrl
+#define KEY_R_CTRL 0x9d // 	RCtrl
+// #define KEY_INSERT 0x7b // 	Insert
+#define KEY_INSERT 0xd2 // 	Insert
+// #define KEY_DELETE 0x79 // 	Delete
+#define KEY_DELETE 0xd3 // 	Delete
+// #define KEY_HOME 0x7f // 	Home
+#define KEY_HOME 0xc7 // 	Home
+// #define KEY_END 0x7a // 	End
+#define KEY_END 0xcf // 	End
+
+// #define KEY_PG_UP 0x6f // 	PgUp
+// #define KEY_PG_DOWN 0x7e // 	PgDn
+#define KEY_PG_UP 0xc9 // 	PgUp
+#define KEY_PG_DOWN 0xd1 // 	PgDn
+
+// #define KEY_LEFT 0x56 // 	Left
+// #define KEY_UP 0x78 // 	Up
+// #define KEY_DOWN 0x55 // 	Down
+// #define KEY_RIGHT 0x7d // 	Right
+#define KEY_LEFT 0xcb // 	Left
+#define KEY_UP 0xc8 // 	Up
+#define KEY_DOWN 0xd0 // 	Down
+#define KEY_RIGHT 0xcd // 	Right
+
+// #define KEY_NUMLOCK 0x01 // 	NumLock
+#define KEY_NUMLOCK 0x45 // 	NumLock
 #define KEY_KP7_HOME 0x47 // 	KP-7 / Home
 #define KEY_KP4_LEFT 0x4b // 	KP-4 / Left
 #define KEY_KP1_END 0x4f // 	KP-1 / End
-#define KEY_KP_DIV 0x45 // 	KP-/
+// #define KEY_KP_DIV 0x45 // 	KP-/
+#define KEY_KP_DIV 0xb5 // 	KP-/
 #define KEY_KP8_UP 0x48 // 	KP-8 / Up
 #define KEY_KP5 0x4c // 	KP-5
 #define KEY_KP2_DOWN 0x50 // 	KP-2 / Down
 #define KEY_KP0_INSERT 0x52 // 	KP-0 / Ins
-#define KEY_KP_TIMES 0x46 // 	KP-*
+// #define KEY_KP_TIMES 0x46 // 	KP-*
+#define KEY_KP_TIMES 0x37 // 	KP-*
 #define KEY_KP9_PG_UP 0x49 // 	KP-9 / PgUp
 #define KEY_KP6_RIGHT 0x4d // 	KP-6 / Right
 #define KEY_KP3_PG_DOWN 0x51 // 	KP-3 / PgDn
-#define KEY_KP_PEROID_DELETE 0x53 // 	KP-. / Del
-#define KEY_KP_MINUS 0x54 // 	KP--
-#define KEY_KP_PLUS 0x37 // 	KP-+
+#define KEY_KP_PERIOD_DELETE 0x53 // 	KP-. / Del
+// #define KEY_KP_MINUS 0x54 // 	KP--
+#define KEY_KP_MINUS 0x4a // 	KP--
+// #define KEY_KP_PLUS 0x37 // 	KP-+
+#define KEY_KP_PLUS 0x4e // 	KP-+
 #define KEY_RETURN_KP_ENTER 0x4e // 	KP-Enter
-#define KEY_ESCAPE 0x64 // 	Esc
-#define KEY_F1 0x58 // 	F1
-#define KEY_F2 0x59 // 	F2
-#define KEY_F3 0x5a // 	F3
-#define KEY_F4 0x5b // 	F4
-#define KEY_F5 0x5c // 	F5
-#define KEY_F6 0x5d // 	F6
-#define KEY_F7 0x5e // 	F7
-#define KEY_F8 0x5f // 	F8
-#define KEY_F9 0x60 // 	F9
-#define KEY_F10 0x61 // 	F10
-#define KEY_F11 0x62 // 	F11
-#define KEY_F12 0x63 // 	F12
+// #define KEY_ESCAPE 0x64 // 	Esc
+#define KEY_ESCAPE 0x1 // 	Esc
+
+// #define KEY_F1 0x58 // 	F1
+// #define KEY_F2 0x59 // 	F2
+// #define KEY_F3 0x5a // 	F3
+// #define KEY_F4 0x5b // 	F4
+// #define KEY_F5 0x5c // 	F5
+// #define KEY_F6 0x5d // 	F6
+// #define KEY_F7 0x5e // 	F7
+// #define KEY_F8 0x5f // 	F8
+// #define KEY_F9 0x60 // 	F9
+// #define KEY_F10 0x61 // 	F10
+// #define KEY_F11 0x62 // 	F11
+// #define KEY_F12 0x63 // 	F12
+#define KEY_F1 0x3b // 	F1
+#define KEY_F2 0x3c // 	F2
+#define KEY_F3 0x3d // 	F3
+#define KEY_F4 0x3e // 	F4
+#define KEY_F5 0x3f // 	F5
+#define KEY_F6 0x40 // 	F6
+#define KEY_F7 0x41 // 	F7
+#define KEY_F8 0x42 // 	F8
+#define KEY_F9 0x43 // 	F9
+#define KEY_F10 0x44 // 	F10
+#define KEY_F11 0x57 // 	F11
+#define KEY_F12 0x58 // 	F12
+
 #define KEY_PRTSCR 0x6e // 	PrtScr
 #define KEY_ALT_SYSRQ 0x6e // 	Alt+SysRq
-#define KEY_SCROLLLOCK 0x76 // 	ScrollLock
-#define KEY_PAUSE 0x77 // 	Pause
+// #define KEY_SCROLLLOCK 0x76 // 	ScrollLock
+#define KEY_SCROLLLOCK 0x46 // 	ScrollLock
+// #define KEY_PAUSE 0x77 // 	Pause
+#define KEY_PAUSE 0x59 // 	Pause
 #define KEY_CTRL_BREAK 0x77 // 	Ctrl+Break
-#define KEY_L_WIN 0x8b // 	LWin (USB: LGUI)
-#define KEY_R_WIN 0x8c // 	RWin (USB: RGUI)
+// #define KEY_L_WIN 0x8b // 	LWin (USB: LGUI)
+#define KEY_L_WIN 0xdb // 	LWin (USB: LGUI)
+// #define KEY_R_WIN 0x8c // 	RWin (USB: RGUI)
+#define KEY_R_WIN 0xdc // 	RWin (USB: RGUI)
 #define KEY_MENU 0x8d // 	Menu
 #define KEY_SLEEP 0x54 // 	Sleep
 // #define KEY_POWER ff // 	Power

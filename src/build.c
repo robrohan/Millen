@@ -34,14 +34,19 @@ int vel, svel, angvel;
 // 	0x9c,0x1c,0xd,0xc,0xf,0x45
 // };
 
+// These keys are override able. I don't like the way this works
+// and should just do away with it.
+// These should list actions or something
 int buildkeys[NUMBUILDKEYS] =
 {
-	// Movement.
+	// 0      1          2         3
 	KEY_UP, KEY_DOWN, KEY_LEFT, KEY_RIGHT,
-	// Modifiers?
+	//  4            5           6          7
 	KEY_L_SHIFT, KEY_R_CTRL, KEY_L_CTRL, KEY_SPACE,
-	KEY_A, KEY_Z, KEY_PG_DOWN, KEY_PG_UP, KEY_COMMA, KEY_PEROID,
-	KEY_RETURN_KP_ENTER, KEY_ENTER, KEY_PLUS, KEY_MINUS, KEY_TAB, KEY_NUMLOCK
+	// 8     9        10          11         12         13
+	KEY_A, KEY_Z, KEY_PG_DOWN, KEY_PG_UP, KEY_COMMA, KEY_PERIOD,
+	// 14      15         16         17       18         19
+	KEY_F2, KEY_ENTER, KEY_PLUS, KEY_MINUS, KEY_TAB, KEY_NUMLOCK
 };
 
 int posx, posy, posz, horiz = 100;
@@ -130,8 +135,6 @@ static unsigned char scantoascwithshift[128] =
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 };
-
-
 
 unsigned char changechar(unsigned char dachar, int dadir, unsigned char smooshyalign, unsigned char boundcheck);
 int adjustmark(int *xplc, int *yplc, short danumwalls);
@@ -257,7 +260,7 @@ int app_main(int argc, char const * const argv[])
 	OSD_RegisterFunction("vidmode","vidmode [xdim ydim] [bpp] [fullscreen]: immediately change the video mode",osdcmd_vidmode);
 	OSD_RegisterFunction("mapversion","mapversion [ver]: change the map version for save (min 5, max 8)", osdcmd_mapversion);
 
-	wm_setapptitle("BUILD by Ken Silverman");
+	wm_setapptitle("Square");
 
 #ifdef RENDERTYPEWIN
 	backgroundidle = 1;
@@ -275,8 +278,8 @@ int app_main(int argc, char const * const argv[])
 			}
 			else if (!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help") || !strcmp(argv[i], "-?")) {
 				char *s =
-					"BUILD by Ken Silverman\n"
-					"Syntax: build [options] mapname\n"
+					"Square\n"
+					"Syntax: square [options] mapname\n"
 					"Options:\n"
 					"\t-grp\tUse an extra GRP or ZIP file.\n"
 					"\t-g\tSame as above.\n"
@@ -285,7 +288,7 @@ int app_main(int argc, char const * const argv[])
 #endif
 					;
 #if defined RENDERTYPEWIN || (defined RENDERTYPESDL && (defined __APPLE__ || defined HAVE_GTK))
-				wm_msgbox("BUILD by Ken Silverman","%s",s);
+				wm_msgbox("Square","%s",s);
 #else
 				puts(s);
 #endif
@@ -342,14 +345,14 @@ int app_main(int argc, char const * const argv[])
 		free((void *)grps);
 	}
 
-	buildsetlogfile("build.log");
+	buildsetlogfile("square.log");
 	inittimer(TIMERINTSPERSECOND);
 	installusertimercallback(keytimerstuff);
 
 	loadpics("tiles000.art",1048576);
 	loadnames();
 
-	Bstrcpy(kensig,"BUILD by Ken Silverman");
+	Bstrcpy(kensig,"Square");
 	initcrc();
 
 	if (!loaddefinitionsfile(defsfilename)) buildputs("Definitions file loaded.\n");
@@ -393,7 +396,8 @@ int app_main(int argc, char const * const argv[])
 		numwalls = 0;
 		cursectnum = -1;
 		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
+		// keystatus[buildkeys[14]] = 0;
+		keystatus[KEY_F2] = 0;
 	}
 	else
 	{
@@ -518,6 +522,7 @@ void showmouse(void)
 	drawline256((searchx  )<<12, (searchy-1)<<12, (searchx  )<<12, (searchy-5)<<12, whitecol);
 }
 
+// 3D Editor View
 void editinput(void)
 {
 	unsigned char smooshyalign, repeatpanalign, *ptr, buffer[80];
@@ -528,55 +533,81 @@ void editinput(void)
 	short hitsect, hitwall, hitsprite;
 	int hitx, hity, hitz, dax, day, hihit, lohit;
 
-	if (keystatus[0x57] > 0)  //F11 - brightness
+	
+	// printf("editinput -> key: %#02x state: %#02x\n", KEY_F2, keystatus[KEY_F2]);
+
+	// F2 Toggle 2d mode
 	{
-		keystatus[0x57] = 0;
+		if (keystatus[KEY_F2] > 0)
+		{
+			// buildprintf("Swap editor state...\n");
+			overheadeditor();
+			// keystatus[buildkeys[14]] = 0;
+			keystatus[KEY_F2] = 0;
+		}
+	}
+	
+	// (not working?) F11 - brightness
+	if (keystatus[KEY_F11] > 0)
+	{
 		brightness++;
 		if (brightness >= 16) brightness = 0;
-		setbrightness(brightness,palette,0);
+		setbrightness(brightness, palette, 0);
+		keystatus[KEY_F11] = 0;
 	}
-	if (keystatus[88] > 0)   //F12
+
+	// Screen shot
+	if (keystatus[KEY_F12] > 0)
 	{
-		screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
-		keystatus[88] = 0;
+		screencapture("captxxxx.tga", (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]));
+		keystatus[KEY_F12] = 0;
 	}
 
-	mousz = 0;
-	getmousevalues(&mousx,&mousy,&bstatus);
-	mousx = (mousx<<16)+mousexsurp;
-	mousy = (mousy<<16)+mouseysurp;
+	// MOUSE
 	{
-	ldiv_t ld;
-	ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
-	ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
+		mousz = 0;
+		getmousevalues(&mousx,&mousy,&bstatus);
+		mousx = (mousx<<16)+mousexsurp;
+		mousy = (mousy<<16)+mouseysurp;
+		{
+			ldiv_t ld;
+			ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
+			ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
+		}
+		searchx += mousx;
+		searchy += mousy;
+
+		if (searchx < 4) searchx = 4;
+		if (searchy < 4) searchy = 4;
+		if (searchx > xdim-5) searchx = xdim-5;
+		if (searchy > ydim-5) searchy = ydim-5;
+		showmouse();
 	}
-	searchx += mousx;
-	searchy += mousy;
-	if (searchx < 4) searchx = 4;
-	if (searchy < 4) searchy = 4;
-	if (searchx > xdim-5) searchx = xdim-5;
-	if (searchy > ydim-5) searchy = ydim-5;
-	showmouse();
 
-	if (keystatus[0x3b] > 0) posx--;
-	if (keystatus[0x3c] > 0) posx++;
-	if (keystatus[0x3d] > 0) posy--;
-	if (keystatus[0x3e] > 0) posy++;
-	if (keystatus[0x43] > 0) ang--;
-	if (keystatus[0x44] > 0) ang++;
+	// if (keystatus[0x3b] > 0) posx--;  // F1
+	// if (keystatus[0x3c] > 0) posx++;  // F2
+	// if (keystatus[0x3d] > 0) posy--;  // F3
+	// if (keystatus[0x3e] > 0) posy++;  // F4
+	// if (keystatus[0x43] > 0) ang--;   // F9
+	// if (keystatus[0x44] > 0) ang++;   // F10
 
+	// TURNING VELOCITY
 	if (angvel != 0)          //ang += angvel * constant
 	{                         //ENGINE calculates angvel for you
 		doubvel = synctics;
-		if (keystatus[buildkeys[4]] > 0)  //Lt. shift makes turn velocity 50% faster
+		//Lt. shift makes turn velocity 50% faster
+		if (keystatus[KEY_L_SHIFT] > 0)  
 			doubvel += (synctics>>1);
 		ang += ((angvel*doubvel)>>4);
 		ang = (ang+2048)&2047;
 	}
+
+	// MOVING VELOCITY
 	if ((vel|svel) != 0)
 	{
 		doubvel = synctics;
-		if (keystatus[buildkeys[4]] > 0)     //Lt. shift doubles forward velocity
+		//Lt. shift doubles forward velocity
+		if (keystatus[KEY_L_SHIFT] > 0)
 			doubvel += synctics;
 		xvect = 0, yvect = 0;
 		if (vel != 0)
@@ -591,9 +622,11 @@ void editinput(void)
 		}
 		clipmove(&posx,&posy,&posz,&cursectnum,xvect,yvect,128L,4L<<8,4L<<8,CLIPMASK0);
 	}
+	
 	getzrange(posx,posy,posz,cursectnum,&hiz,&hihit,&loz,&lohit,128L,CLIPMASK0);
 
-	if (keystatus[0x3a] > 0)
+	// CYCLE LOOK MODE
+	if (keystatus[KEY_CAPSLOCK] > 0)
 	{
 		zmode++;
 		if (zmode == 3) zmode = 0;
@@ -601,97 +634,106 @@ void editinput(void)
 		keystatus[0x3a] = 0;
 	}
 
-	if (zmode == 0)
+	// Player "fly" up and down and pan up and down (based on zmode)
+	// A and Z key
 	{
-		goalz = loz-(kensplayerheight<<8);   //playerheight pixels above floor
-		if (goalz < hiz+(16<<8))   //ceiling&floor too close
-			goalz = ((loz+hiz)>>1);
-		goalz += mousz;
-		if (keystatus[buildkeys[8]] > 0)                            //A (stand high)
+		if (zmode == 0)
 		{
-			if (keystatus[0x1d] > 0)
-				horiz = max(-100,horiz-((keystatus[buildkeys[4]]+1)*synctics*2));
-			else
-			{
-				goalz -= (16<<8);
-				if (keystatus[buildkeys[4]] > 0)    //Either shift key
-					goalz -= (24<<8);
-			}
-		}
-		if (keystatus[buildkeys[9]] > 0)                            //Z (stand low)
-		{
-			if (keystatus[0x1d] > 0)
-				horiz = min(300,horiz+((keystatus[buildkeys[4]]+1)*synctics*2));
-			else
-			{
-				goalz += (12<<8);
-				if (keystatus[buildkeys[4]] > 0)    //Either shift key
-					goalz += (12<<8);
-			}
-		}
+			// playerheight pixels above floor
+			goalz = loz-(kensplayerheight<<8);
+			//ceiling&floor too close
+			if (goalz < hiz+(16<<8))
+				goalz = ((loz+hiz)>>1);
+			goalz += mousz;
 
-		if (goalz != posz)
-		{
-			if (posz < goalz) hvel += 32;
-			if (posz > goalz) hvel = ((goalz-posz)>>3);
-
-			posz += hvel;
-			if (posz > loz-(4<<8)) posz = loz-(4<<8), hvel = 0;
-			if (posz < hiz+(4<<8)) posz = hiz+(4<<8), hvel = 0;
-		}
-	}
-	else
-	{
-		goalz = posz;
-		if (keystatus[buildkeys[8]] > 0)                            //A
-		{
-			if (keystatus[0x1d] > 0) {
-				horiz = max(-100,horiz-((keystatus[buildkeys[4]]+1)*synctics*2));
-			} else {
-				if (zmode != 1)
-					goalz -= (8<<8);
+			//A (stand high)
+			if (keystatus[KEY_A] > 0)
+			{
+				if (keystatus[KEY_L_CTRL] > 0)
+					horiz = max(-100,horiz-((keystatus[KEY_L_SHIFT]+1)*synctics*2));
 				else
 				{
-					zlock += (4<<8);
-					keystatus[buildkeys[8]] = 0;
+					goalz -= (16<<8);
+					if (keystatus[KEY_L_SHIFT] > 0)    //Either shift key
+						goalz -= (24<<8);
 				}
 			}
-		}
-		if (keystatus[buildkeys[9]] > 0)                            //Z (stand low)
-		{
-			if (keystatus[0x1d] > 0) {
-				horiz = min(300,horiz+((keystatus[buildkeys[4]]+1)*synctics*2));
-			} else {
-				if (zmode != 1)
-					goalz += (8<<8);
-				else if (zlock > 0)
+			//Z (stand low)
+			if (keystatus[KEY_Z] > 0)
+			{
+				if (keystatus[KEY_L_CTRL] > 0)
+					horiz = min(300,horiz+((keystatus[KEY_L_SHIFT]+1)*synctics*2));
+				else
 				{
-					zlock -= (4<<8);
-					keystatus[buildkeys[9]] = 0;
+					goalz += (12<<8);
+					if (keystatus[KEY_L_SHIFT] > 0)    //Either shift key
+						goalz += (12<<8);
 				}
 			}
-		}
 
-		if (goalz < hiz+(4<<8)) goalz = hiz+(4<<8);
-		if (goalz > loz-(4<<8)) goalz = loz-(4<<8);
-		if (zmode == 1) goalz = loz-zlock;
-		if (goalz < hiz+(4<<8)) goalz = ((loz+hiz)>>1);  //ceiling&floor too close
-		if (zmode == 1) posz = goalz;
+			if (goalz != posz)
+			{
+				if (posz < goalz) hvel += 32;
+				if (posz > goalz) hvel = ((goalz-posz)>>3);
 
-		if (goalz != posz)
-		{
-			//if (posz < goalz) hvel += (32<<keystatus[buildkeys[4]]);
-			//if (posz > goalz) hvel -= (32<<keystatus[buildkeys[4]]);
-			if (posz < goalz) hvel = ((synctics* 192)<<keystatus[buildkeys[4]]);
-			if (posz > goalz) hvel = ((synctics*-192)<<keystatus[buildkeys[4]]);
-
-			posz += hvel;
-
-			if (posz > loz-(4<<8)) posz = loz-(4<<8), hvel = 0;
-			if (posz < hiz+(4<<8)) posz = hiz+(4<<8), hvel = 0;
+				posz += hvel;
+				if (posz > loz-(4<<8)) posz = loz-(4<<8), hvel = 0;
+				if (posz < hiz+(4<<8)) posz = hiz+(4<<8), hvel = 0;
+			}
 		}
 		else
-			hvel = 0;
+		{
+			goalz = posz;
+			if (keystatus[KEY_A] > 0)
+			{
+				if (keystatus[KEY_L_CTRL] > 0) {
+					horiz = max(-100,horiz-((keystatus[KEY_L_SHIFT]+1)*synctics*2));
+				} else {
+					if (zmode != 1)
+						goalz -= (8<<8);
+					else
+					{
+						zlock += (4<<8);
+						keystatus[KEY_A] = 0;
+					}
+				}
+			}
+			if (keystatus[KEY_Z] > 0)
+			{
+				if (keystatus[KEY_L_CTRL] > 0) {
+					horiz = min(300,horiz+((keystatus[KEY_L_SHIFT]+1)*synctics*2));
+				} else {
+					if (zmode != 1)
+						goalz += (8<<8);
+					else if (zlock > 0)
+					{
+						zlock -= (4<<8);
+						keystatus[KEY_Z] = 0;
+					}
+				}
+			}
+
+			if (goalz < hiz+(4<<8)) goalz = hiz+(4<<8);
+			if (goalz > loz-(4<<8)) goalz = loz-(4<<8);
+			if (zmode == 1) goalz = loz-zlock;
+			if (goalz < hiz+(4<<8)) goalz = ((loz+hiz)>>1);  //ceiling & floor too close
+			if (zmode == 1) posz = goalz;
+
+			if (goalz != posz)
+			{
+				//if (posz < goalz) hvel += (32<<keystatus[buildkeys[4]]);
+				//if (posz > goalz) hvel -= (32<<keystatus[buildkeys[4]]);
+				if (posz < goalz) hvel = ((synctics* 192)<<keystatus[buildkeys[4]]);
+				if (posz > goalz) hvel = ((synctics*-192)<<keystatus[buildkeys[4]]);
+
+				posz += hvel;
+
+				if (posz > loz-(4<<8)) posz = loz-(4<<8), hvel = 0;
+				if (posz < hiz+(4<<8)) posz = hiz+(4<<8), hvel = 0;
+			}
+			else
+				hvel = 0;
+		}
 	}
 
 	searchit = 2;
@@ -699,18 +741,19 @@ void editinput(void)
 	{
 		if ((bstatus&1) > 0)
 			searchit = 0;
-		if (keystatus[0x4a] > 0)  // -
+		// - 
+		if (keystatus[KEY_MINUS] > 0)
 		{
-			keystatus[0x4a] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			keystatus[KEY_MINUS] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT (LALT RALT)
 			{
-				if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //CTRL
+				if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //CTRL (LCTL RCTL)
 				{
 					if (visibility < 16384) visibility += visibility;
 				}
 				else
 				{
-					if ((keystatus[0x2a]|keystatus[0x36]) == 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0)  // SHFIT (LSHIFT RSHIFT)
 						k = 16; else k = 1;
 
 					if (highlightsectorcnt >= 0)
@@ -739,6 +782,7 @@ void editinput(void)
 					asksave = 1;
 				}
 			}
+			// NO MODIFIER KEYS
 			else
 			{
 				k = 0;
@@ -785,18 +829,20 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		if (keystatus[0x4e] > 0)  // +
+		// +
+		if (keystatus[KEY_PLUS] > 0)
 		{
-			keystatus[0x4e] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			// keystatus[0x4e] = 0;
+			keystatus[KEY_PLUS] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT
 			{
-				if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //CTRL
+				if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //CTRL
 				{
 					if (visibility > 32) visibility >>= 1;
 				}
 				else
 				{
-					if ((keystatus[0x2a]|keystatus[0x36]) == 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0)
 						k = 16; else k = 1;
 
 					if (highlightsectorcnt >= 0)
@@ -871,7 +917,8 @@ void editinput(void)
 				asksave = 1;
 			}
 		}
-		if (keystatus[0xc9] > 0) // PGUP
+		 // PGUP
+		if (keystatus[KEY_PG_UP] > 0)
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -895,10 +942,10 @@ void editinput(void)
 						templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<2);
 						if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 						if (sprite[i].z == templong)
-							sprite[i].z -= 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+							sprite[i].z -= 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 						i = nextspritesect[i];
 					}
-					sector[searchsector].ceilingz -= 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+					sector[searchsector].ceilingz -= 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 				}
 				else
 				{
@@ -911,13 +958,14 @@ void editinput(void)
 							templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<2);
 							if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 							if (sprite[i].z == templong)
-								sprite[i].z -= 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+								sprite[i].z -= 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 							i = nextspritesect[i];
 						}
-						sector[highlightsector[j]].ceilingz -= 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+						sector[highlightsector[j]].ceilingz -= 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 					}
 				}
 			}
+
 			if (searchstat == 2)
 			{
 				if (k == 0)
@@ -985,7 +1033,8 @@ void editinput(void)
 			asksave = 1;
 			keystatus[0xc9] = 0;
 		}
-		if (keystatus[0xd1] > 0) // PGDN
+		// PGDN
+		if (keystatus[KEY_PG_DOWN] > 0)
 		{
 			k = 0;
 			if (highlightsectorcnt >= 0)
@@ -998,6 +1047,7 @@ void editinput(void)
 					}
 			}
 
+			// SearchStat?
 			if ((searchstat == 0) || (searchstat == 1))
 			{
 				if (k == 0)
@@ -1009,10 +1059,10 @@ void editinput(void)
 						if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 						templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<2);
 						if (sprite[i].z == templong)
-							sprite[i].z += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+							sprite[i].z += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 						i = nextspritesect[i];
 					}
-					sector[searchsector].ceilingz += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+					sector[searchsector].ceilingz += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 				}
 				else
 				{
@@ -1025,13 +1075,14 @@ void editinput(void)
 							if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 							templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<2);
 							if (sprite[i].z == templong)
-								sprite[i].z += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+								sprite[i].z += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 							i = nextspritesect[i];
 						}
-						sector[highlightsector[j]].ceilingz += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+						sector[highlightsector[j]].ceilingz += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 					}
 				}
 			}
+			// SearchStat?
 			if (searchstat == 2)
 			{
 				if (k == 0)
@@ -1042,10 +1093,10 @@ void editinput(void)
 						templong = getflorzofslope(searchsector,sprite[i].x,sprite[i].y);
 						if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 						if (sprite[i].z == templong)
-							sprite[i].z += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+							sprite[i].z += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 						i = nextspritesect[i];
 					}
-					sector[searchsector].floorz += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+					sector[searchsector].floorz += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 				}
 				else
 				{
@@ -1057,18 +1108,21 @@ void editinput(void)
 							templong = getflorzofslope(highlightsector[j],sprite[i].x,sprite[i].y);
 							if (sprite[i].cstat&128) templong += ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
 							if (sprite[i].z == templong)
-								sprite[i].z += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+								sprite[i].z += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 							i = nextspritesect[i];
 						}
-						sector[highlightsector[j]].floorz += 1024 << ((keystatus[0x1d]|keystatus[0x9d])<<1);	// JBF 20031128
+						sector[highlightsector[j]].floorz += 1024 << ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL])<<1);	// JBF 20031128
 					}
 				}
 			}
+			
 			if (sector[searchsector].ceilingz > sector[searchsector].floorz)
 				sector[searchsector].ceilingz = sector[searchsector].floorz;
+			
+			// SearchStat?
 			if (searchstat == 3)
 			{
-				if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //CTRL - put sprite on ground
+				if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //CTRL - put sprite on ground
 				{
 					sprite[searchwall].z = getflorzofslope(searchsector,sprite[searchwall].x,sprite[searchwall].y);
 					if (sprite[searchwall].cstat&128) sprite[searchwall].z -= ((tilesizy[sprite[searchwall].picnum]*sprite[searchwall].yrepeat)<<1);
@@ -1095,10 +1149,13 @@ void editinput(void)
 				}
 			}
 			asksave = 1;
-			keystatus[0xd1] = 0;
+			keystatus[KEY_PG_DOWN] = 0;
 		}
-		if (keystatus[0x0f] > 0)  //TAB
+
+		// TAB Copy texture or something
+		if (keystatus[KEY_TAB] > 0)  //TAB
 		{
+			// wall...
 			if (searchstat == 0)
 			{
 				temppicnum = wall[searchwall].picnum;
@@ -1111,6 +1168,8 @@ void editinput(void)
 				temphitag = wall[searchwall].hitag;
 				tempextra = wall[searchwall].extra;
 			}
+
+			//sector
 			if (searchstat == 1)
 			{
 				temppicnum = sector[searchsector].ceilingpicnum;
@@ -1124,6 +1183,8 @@ void editinput(void)
 				temphitag = sector[searchsector].hitag;
 				tempextra = sector[searchsector].extra;
 			}
+
+			//sector
 			if (searchstat == 2)
 			{
 				temppicnum = sector[searchsector].floorpicnum;
@@ -1137,6 +1198,8 @@ void editinput(void)
 				temphitag = sector[searchsector].hitag;
 				tempextra = sector[searchsector].extra;
 			}
+
+			//sprite
 			if (searchstat == 3)
 			{
 				temppicnum = sprite[searchwall].picnum;
@@ -1149,6 +1212,8 @@ void editinput(void)
 				temphitag = sprite[searchwall].hitag;
 				tempextra = sprite[searchwall].extra;
 			}
+
+			// wall again?
 			if (searchstat == 4)
 			{
 				temppicnum = wall[searchwall].overpicnum;
@@ -1162,13 +1227,13 @@ void editinput(void)
 				tempextra = wall[searchwall].extra;
 			}
 			somethingintab = searchstat;
-			keystatus[0x0f] = 0;
+			keystatus[KEY_TAB] = 0;
 		}
-		if (keystatus[0x1c] > 0) //Left ENTER
+		if (keystatus[KEY_ENTER] > 0) //Left ENTER
 		{
-			if ((keystatus[0x2a]|keystatus[0x36]) > 0)       //Either shift key
+			if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)       //Either shift key
 			{
-				if (((searchstat == 0) || (searchstat == 4)) && ((keystatus[0x1d]|keystatus[0x9d]) > 0))  //Ctrl-shift Enter (auto-shade)
+				if (((searchstat == 0) || (searchstat == 4)) && ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0))  //Ctrl-shift Enter (auto-shade)
 				{
 					dashade[0] = 127;
 					dashade[1] = -128;
@@ -1215,7 +1280,7 @@ void editinput(void)
 					if (searchstat == 4) wall[searchwall].shade = tempshade, wall[searchwall].pal = temppal;
 				}
 			}
-			else if (((searchstat == 0) || (searchstat == 4)) && ((keystatus[0x1d]|keystatus[0x9d]) > 0) && (somethingintab < 255))  //Either ctrl key
+			else if (((searchstat == 0) || (searchstat == 4)) && ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0) && (somethingintab < 255))  //Either ctrl key
 			{
 				i = searchwall;
 				do
@@ -1234,7 +1299,7 @@ void editinput(void)
 				}
 				while (i != searchwall);
 			}
-			else if (((searchstat == 1) || (searchstat == 2)) && ((keystatus[0x1d]|keystatus[0x9d]) > 0) && (somethingintab < 255))  //Either ctrl key
+			else if (((searchstat == 1) || (searchstat == 2)) && ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0) && (somethingintab < 255))  //Either ctrl key
 			{
 				clearbuf(&pskysearch[0],(int)((numsectors+3)>>2),0L);
 				if (searchstat == 1)
@@ -1406,17 +1471,18 @@ void editinput(void)
 				}
 			}
 			asksave = 1;
-			keystatus[0x1c] = 0;
+			keystatus[KEY_ENTER] = 0;
 		}
-		if (keystatus[0x2e] > 0)      //C
+		if (keystatus[KEY_C] > 0) //C
 		{
-			keystatus[0x2e] = 0;
-			if (keystatus[0x38] > 0)    //Alt-C
+			keystatus[KEY_C] = 0;
+			if (keystatus[KEY_L_ALT] > 0)    //Alt-C
 			{
 				if (somethingintab < 255)
 				{
 					switch(searchstat)
 					{
+						// CLUE! what searchstat means --\/
 						case 0:
 							j = wall[searchwall].picnum;
 							for(i=0;i<numwalls;i++)
@@ -1455,7 +1521,8 @@ void editinput(void)
 				}
 			}
 		}
-		if (keystatus[0x2f] > 0)  //V
+		// V Search for texture
+		if (keystatus[KEY_V] > 0) // V
 		{
 			if (searchstat == 0) templong = wall[searchwall].picnum;
 			if (searchstat == 1) templong = sector[searchsector].ceilingpicnum;
@@ -1474,13 +1541,14 @@ void editinput(void)
 					 wall[wall[searchwall].nextwall].overpicnum = templong;
 			}
 			asksave = 1;
-			keystatus[0x2f] = 0;
+			keystatus[KEY_V] = 0;
 		}
 
-		if (keystatus[0x1a])  // [
+		// SLOPE
+		if (keystatus[KEY_OPEN_BRACE])  // [
 		{
-			keystatus[0x1a] = 0;
-			if (keystatus[0x38]|keystatus[0xb8])
+			keystatus[KEY_OPEN_BRACE] = 0;
+			if (keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])
 			{
 				i = wall[searchwall].nextsector;
 				if (i >= 0)
@@ -1497,8 +1565,8 @@ void editinput(void)
 			else
 			{
 				i = 512;
-				if (keystatus[0x36]) i = 8;
-				if (keystatus[0x2a]) i = 1;
+				if (keystatus[KEY_R_SHIFT]) i = 8;
+				if (keystatus[KEY_L_SHIFT]) i = 1;
 
 				if (searchstat == 1)
 				{
@@ -1525,10 +1593,11 @@ void editinput(void)
 				sector[searchsector].floorstat |= 2;
 			asksave = 1;
 		}
-		if (keystatus[0x1b])  // ]
+		// SLOPE
+		if (keystatus[KEY_CLOSE_BRACE])  // ]
 		{
-			keystatus[0x1b] = 0;
-			if (keystatus[0x38]|keystatus[0xb8])
+			keystatus[KEY_CLOSE_BRACE] = 0;
+			if (keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])
 			{
 				i = wall[searchwall].nextsector;
 				if (i >= 0)
@@ -1545,8 +1614,8 @@ void editinput(void)
 			else
 			{
 				i = 512;
-				if (keystatus[0x36]) i = 8;
-				if (keystatus[0x2a]) i = 1;
+				if (keystatus[KEY_R_SHIFT]) i = 8;
+				if (keystatus[KEY_L_SHIFT]) i = 1;
 
 				if (searchstat == 1)
 				{
@@ -1575,9 +1644,10 @@ void editinput(void)
 			asksave = 1;
 		}
 
-		smooshyalign = keystatus[0x4c];
-		repeatpanalign = (keystatus[0x2a]|keystatus[0x36]);
-		if ((keystatus[0x4b]|keystatus[0x4d]) > 0)  // 4 & 6 (keypad)
+		smooshyalign = keystatus[KEY_KP5];
+		repeatpanalign = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
+		// I don't want to use the keypad so I need to remap these to something at some point
+		if ((keystatus[KEY_KP4_LEFT]|keystatus[KEY_KP6_RIGHT]) > 0)  // 4 & 6 (keypad)
 		{
 			if ((repeatcountx == 0) || (repeatcountx > 16))
 			{
@@ -1613,7 +1683,7 @@ void editinput(void)
 		else
 			repeatcountx = 0;
 
-		if ((keystatus[0x48]|keystatus[0x50]) > 0)  // 2 & 8 (keypad)
+		if ((keystatus[KEY_KP8_UP]|keystatus[KEY_KP2_DOWN]) > 0)  // 2 & 8 (keypad)
 		{
 			if ((repeatcounty == 0) || (repeatcounty > 16))
 			{
@@ -1650,21 +1720,24 @@ void editinput(void)
 		else
 			repeatcounty = 0;
 
-		if (keystatus[0x33] > 0) // , Search & fix panning to the left (3D)
+		// Rotate a wall sprite
+		if (keystatus[KEY_COMMA] > 0) // , Search & fix panning to the left (3D)
 		{
 			if (searchstat == 3)
 			{
 				i = searchwall;
-				if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+				if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 					sprite[i].ang = ((sprite[i].ang+2048-1)&2047);
 				else
 				{
 					sprite[i].ang = ((sprite[i].ang+2048-128)&2047);
-					keystatus[0x33] = 0;
+					// TODO: shouldn't this be out of this else?
 				}
 			}
+			keystatus[KEY_COMMA] = 0;
 		}
-		if (keystatus[0x34] > 0) // . Search & fix panning to the right (3D)
+		// Rotate a wall sprite
+		if (keystatus[KEY_PERIOD] > 0) // . Search & fix panning to the right (3D)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
 			{
@@ -1747,21 +1820,22 @@ void editinput(void)
 				while ((wall[wallfind[0]].picnum == wall[searchwall].picnum) && (wallfind[0] != searchwall) && (cnt > 0));
 				*/
 
-				keystatus[0x34] = 0;
+				keystatus[KEY_PERIOD] = 0;
 			}
 			if (searchstat == 3)
 			{
 				i = searchwall;
-				if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+				if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 					sprite[i].ang = ((sprite[i].ang+2048+1)&2047);
 				else
 				{
 					sprite[i].ang = ((sprite[i].ang+2048+128)&2047);
-					keystatus[0x34] = 0;
 				}
+				keystatus[KEY_PERIOD] = 0;
 			}
 		}
-		if (keystatus[0x35] > 0)  // /?     Reset panning&repeat to 0
+		// /?     Reset panning&repeat to 0
+		if (keystatus[KEY_QUESTION] > 0)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
 			{
@@ -1798,19 +1872,19 @@ void editinput(void)
 					sprite[searchwall].yrepeat = 64;
 				}
 			}
-			keystatus[0x35] = 0;
+			keystatus[KEY_QUESTION] = 0;
 			asksave = 1;
 		}
-
-		if (keystatus[0x19] > 0)  // P (parallaxing sky)
+		// P (parallaxing sky)
+		if (keystatus[KEY_P] > 0)
 		{
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)
 			{
 				parallaxtype++;
 				if (parallaxtype == 3)
 					parallaxtype = 0;
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)
 			{
 				switch (searchstat)
 				{
@@ -1845,13 +1919,13 @@ void editinput(void)
 					asksave = 1;
 				}
 			}
-			keystatus[0x19] = 0;
+			keystatus[KEY_P] = 0;
 		}
-
-		if (keystatus[0x20] != 0)   //Alt-D  (adjust sprite[].clipdist)
+		// Alt-D  (adjust sprite[].clipdist)
+		if (keystatus[KEY_D] != 0) 
 		{
-			keystatus[0x20] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)
+			keystatus[KEY_D] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)
 			{
 				if (searchstat == 3)
 				{
@@ -1860,8 +1934,8 @@ void editinput(void)
 				}
 			}
 		}
-
-		if (keystatus[0x30] > 0)  // B (clip Blocking xor) (3D)
+		// B (clip Blocking xor) (3D)
+		if (keystatus[KEY_B] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -1881,9 +1955,10 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x30] = 0;
+			keystatus[KEY_B] = 0;
 		}
-		if (keystatus[0x14] > 0)  // T (transluscence for sprites/masked walls)
+		// T (transluscence for sprites/masked walls)
+		if (keystatus[KEY_T] > 0)
 		{
 			/*if (searchstat == 1)   //Set masked/transluscent ceilings/floors
 			{
@@ -1937,10 +2012,10 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x14] = 0;
+			keystatus[KEY_T] = 0;
 		}
-
-		if (keystatus[0x2] > 0)  // 1 (make 1-way wall)
+		// 1 (make 1-way wall)
+		if (keystatus[KEY_ONE] > 0)
 		{
 			if (searchstat != 3)
 			{
@@ -1960,18 +2035,20 @@ void editinput(void)
 				}
 				asksave = 1;
 			}
-			keystatus[0x2] = 0;
+			keystatus[KEY_ONE] = 0;
 		}
-		if (keystatus[0x3] > 0)  // 2 (bottom wall swapping)
+		// 2 (bottom wall swapping)
+		if (keystatus[KEY_TWO] > 0)
 		{
 			if (searchstat != 3)
 			{
 				wall[searchwall].cstat ^= 2;
 				asksave = 1;
 			}
-			keystatus[0x3] = 0;
+			keystatus[KEY_TWO] = 0;
 		}
-		if (keystatus[0x18] > 0)  // O (top/bottom orientation - for doors)
+		// O (top/bottom orientation - for doors)
+		if (keystatus[KEY_O] > 0)
 		{
 			if ((searchstat == 0) || (searchstat == 4))
 			{
@@ -2004,14 +2081,15 @@ void editinput(void)
 					sprite[i].y += ksgn(wall[j].x-wall[hitwall].x);
 				}
 			}
-			keystatus[0x18] = 0;
+			keystatus[KEY_O] = 0;
 		}
-		if (keystatus[0x32] > 0)  // M (masking walls)
+		// M (masking walls)
+		if (keystatus[KEY_M] > 0)
 		{
 			if (searchstat != 3)
 			{
 				i = wall[searchwall].nextwall;
-				templong = (keystatus[0x2a]|keystatus[0x36]);
+				templong = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 				if (i >= 0)
 				{
 					wall[searchwall].cstat ^= 16;
@@ -2039,9 +2117,10 @@ void editinput(void)
 					asksave = 1;
 				}
 			}
-			keystatus[0x32] = 0;
+			keystatus[KEY_M] = 0;
 		}
-		if (keystatus[0x23] > 0)  // H (hitscan sensitivity)
+		// H (hitscan sensitivity)
+		if (keystatus[KEY_H] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -2051,16 +2130,17 @@ void editinput(void)
 			else
 			{
 				wall[searchwall].cstat ^= 64;
-				if ((wall[searchwall].nextwall >= 0) && ((keystatus[0x2a]|keystatus[0x36]) == 0))
+				if ((wall[searchwall].nextwall >= 0) && ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0))
 				{
 					wall[wall[searchwall].nextwall].cstat &= ~64;
 					wall[wall[searchwall].nextwall].cstat |= (wall[searchwall].cstat&64);
 				}
 				asksave = 1;
 			}
-			keystatus[0x23] = 0;
+			keystatus[KEY_H] = 0;
 		}
-		if (keystatus[0x12] > 0)  // E (expand)
+		// E (expand)
+		if (keystatus[KEY_E] > 0)
 		{
 			if (searchstat == 1)
 			{
@@ -2072,9 +2152,10 @@ void editinput(void)
 				sector[searchsector].floorstat ^= 8;
 				asksave = 1;
 			}
-			keystatus[0x12] = 0;
+			keystatus[KEY_E] = 0;
 		}
-		if (keystatus[0x13] > 0)  // R (relative alignment, rotation)
+		// R (relative alignment, rotation)
+		if (keystatus[KEY_R] > 0)
 		{
 			if (searchstat == 1)
 			{
@@ -2093,12 +2174,13 @@ void editinput(void)
 				sprite[searchwall].cstat = i;
 				asksave = 1;
 			}
-			keystatus[0x13] = 0;
+			keystatus[KEY_R] = 0;
 		}
-		if (keystatus[0x21] > 0)  //F (Flip)
+		//F (Flip)
+		if (keystatus[KEY_F] > 0)
 		{
-			keystatus[0x21] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT-F (relative alignmment flip)
+			keystatus[KEY_F] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT-F (relative alignmment flip)
 			{
 				if (searchstat != 3)
 				{
@@ -2190,7 +2272,8 @@ void editinput(void)
 				}
 			}
 		}
-		if (keystatus[0x1f] > 0)  //S (insert sprite) (3D)
+		// S (insert sprite) (3D)
+		if (keystatus[KEY_S] > 0)
 		{
 			dax = 16384;
 			day = divscale14(searchx-(xdim>>1),xdim>>1);
@@ -2298,9 +2381,10 @@ void editinput(void)
 				asksave = 1;
 			}
 
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
-		if (keystatus[0xd3] > 0)
+		// delete sprite
+		if (keystatus[KEY_DELETE] > 0)
 		{
 			if (searchstat == 3)
 			{
@@ -2308,36 +2392,41 @@ void editinput(void)
 				updatenumsprites();
 				asksave = 1;
 			}
-			keystatus[0xd3] = 0;
+			keystatus[KEY_DELETE] = 0;
 		}
-
-		if ((keystatus[0x3f]|keystatus[0x40]) > 0)  //F5,F6
-		{
-			switch(searchstat)
-			{
-				case 1: case 2: ExtShowSectorData(searchsector); break;
-				case 0: case 4: ExtShowWallData(searchwall); break;
-				case 3: ExtShowSpriteData(searchwall); break;
-			}
-			keystatus[0x3f] = 0, keystatus[0x40] = 0;
-		}
-		if ((keystatus[0x41]|keystatus[0x42]) > 0)  //F7,F8
-		{
-			switch(searchstat)
-			{
-				case 1: case 2: ExtEditSectorData(searchsector); break;
-				case 0: case 4: ExtEditWallData(searchwall); break;
-				case 3: ExtEditSpriteData(searchwall); break;
-			}
-			keystatus[0x41] = 0, keystatus[0x42] = 0;
-		}
-
+		
+		// Draw extra data into the editor
+		//F5,F6
+		// Curently don't work in 3d view
+		// if ((keystatus[KEY_F5]|keystatus[KEY_F6]) > 0)  
+		// {
+		// 	switch(searchstat)
+		// 	{
+		// 		case 1: case 2: ExtShowSectorData(searchsector); break;
+		// 		case 0: case 4: ExtShowWallData(searchwall); break;
+		// 		case 3: ExtShowSpriteData(searchwall); break;
+		// 	}
+		// 	keystatus[KEY_F5] = 0, keystatus[KEY_F6] = 0;
+		// }
+		// //F7,F8
+		// if ((keystatus[KEY_F7]|keystatus[KEY_F8]) > 0)  
+		// {
+		// 	switch(searchstat)
+		// 	{
+		// 		case 1: case 2: ExtEditSectorData(searchsector); break;
+		// 		case 0: case 4: ExtEditWallData(searchwall); break;
+		// 		case 3: ExtEditSpriteData(searchwall); break;
+		// 	}
+		// 	keystatus[KEY_F7] = 0, keystatus[KEY_F8] = 0;
+		// }
 	}
-	if (keystatus[buildkeys[14]] > 0)  // Enter
-	{
-		overheadeditor();
-		keystatus[buildkeys[14]] = 0;
-	}
+	
+	// if (keystatus[buildkeys[14]] > 0)  // Enter
+	// {
+	// 	buildprintf("Swap editor state...");
+	// 	overheadeditor();
+	// 	keystatus[buildkeys[14]] = 0;
+	// }
 }
 
 unsigned char changechar(unsigned char dachar, int dadir, unsigned char smooshyalign, unsigned char boundcheck)
@@ -2671,6 +2760,7 @@ int drawtilescreen(int pictopleft, int picbox)
 	return(0);
 }
 
+// 2D Editor View
 void overheadeditor(void)
 {
 	char buffer[80];
@@ -2756,12 +2846,13 @@ void overheadeditor(void)
 	circlewall = -1;
 	circlepoints = 7;
 	bstatus = 0;
-	keystatus[buildkeys[14]] = 0;
-	while ((keystatus[buildkeys[14]]>>1) == 0)
+	keystatus[KEY_F2] = 0;
+
+	while (keystatus[KEY_F3] == 0 )
 	{
 		if (handleevents()) {
 			if (quitevent) {
-				keystatus[1] = 1;
+				keystatus[KEY_ESCAPE] = 1;
 				quitevent = 0;
 			}
 		}
@@ -2773,9 +2864,9 @@ void overheadeditor(void)
 		mousx = (mousx<<16)+mousexsurp;
 		mousy = (mousy<<16)+mouseysurp;
 		{
-		ldiv_t ld;
-		ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
-		ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
+			ldiv_t ld;
+			ld = ldiv((int)((double)mousx*msens), (1<<16)); mousx = ld.quot; mousexsurp = ld.rem;
+			ld = ldiv((int)((double)mousy*msens), (1<<16)); mousy = ld.quot; mouseysurp = ld.rem;
 		}
 		searchx += mousx;
 		searchy += mousy;
@@ -2784,16 +2875,17 @@ void overheadeditor(void)
 		if (searchy < 8) searchy = 8;
 		if (searchy > ydim-8-1) searchy = ydim-8-1;
 
-		if (keystatus[0x3b] > 0) posx--, keystatus[0x3b] = 0;
-		if (keystatus[0x3c] > 0) posx++, keystatus[0x3c] = 0;
-		if (keystatus[0x3d] > 0) posy--, keystatus[0x3d] = 0;
-		if (keystatus[0x3e] > 0) posy++, keystatus[0x3e] = 0;
-		if (keystatus[0x43] > 0) ang--, keystatus[0x43] = 0;
-		if (keystatus[0x44] > 0) ang++, keystatus[0x44] = 0;
+		// if (keystatus[0x3b] > 0) posx--, keystatus[0x3b] = 0;
+		// if (keystatus[0x3c] > 0) posx++, keystatus[0x3c] = 0;
+		// if (keystatus[0x3d] > 0) posy--, keystatus[0x3d] = 0;
+		// if (keystatus[0x3e] > 0) posy++, keystatus[0x3e] = 0;
+		// if (keystatus[0x43] > 0) ang--, keystatus[0x43] = 0;
+		// if (keystatus[0x44] > 0) ang++, keystatus[0x44] = 0;
+
 		if (angvel != 0)          //ang += angvel * constant
 		{                         //ENGINE calculates angvel for you
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)  //Lt. shift makes turn velocity 50% faster
+			if (keystatus[KEY_L_SHIFT] > 0)  //Lt. shift makes turn velocity 50% faster
 				doubvel += (synctics>>1);
 			ang += ((angvel*doubvel)>>4);
 			ang = (ang+2048)&2047;
@@ -2801,7 +2893,7 @@ void overheadeditor(void)
 		if ((vel|svel) != 0)
 		{
 			doubvel = synctics;
-			if (keystatus[buildkeys[4]] > 0)     //Lt. shift doubles forward velocity
+			if (keystatus[KEY_L_SHIFT] > 0)     //Lt. shift doubles forward velocity
 				doubvel += synctics;
 			xvect = 0, yvect = 0;
 			if (vel != 0)
@@ -2977,27 +3069,29 @@ void overheadeditor(void)
 
 		OSD_Draw();
 
-		if (keystatus[88] > 0)   //F12
-		{
-			keystatus[88] = 0;
-			/*
-			j = ydim16; ydim16 = ydim;
-			clear2dscreen();
-			draw2dgrid(posx,posy,ang,zoom,grid);
-			draw2dscreen(posx,posy,ang,zoom,grid);
-			*/
+		// if (keystatus[88] > 0)   //F12
+		// {
+		// 	keystatus[88] = 0;
+		// 	/*
+		// 	j = ydim16; ydim16 = ydim;
+		// 	clear2dscreen();
+		// 	draw2dgrid(posx,posy,ang,zoom,grid);
+		// 	draw2dscreen(posx,posy,ang,zoom,grid);
+		// 	*/
 
-			screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
+		// 	screencapture("captxxxx.tga",keystatus[0x2a]|keystatus[0x36]);
 
-			/*
-			ydim16 = j;
-			clear2dscreen();
-			draw2dgrid(posx,posy,ang,zoom,grid);
-			draw2dscreen(posx,posy,ang,zoom,grid);
-			*/
-			showframe();
-		}
-		if (keystatus[0x30] > 0)  // B (clip Blocking xor) (2D)
+		// 	/*
+		// 	ydim16 = j;
+		// 	clear2dscreen();
+		// 	draw2dgrid(posx,posy,ang,zoom,grid);
+		// 	draw2dscreen(posx,posy,ang,zoom,grid);
+		// 	*/
+		// 	showframe();
+		// }
+
+		// B (clip Blocking xor) (2D)
+		if (keystatus[KEY_B] > 0)
 		{
 			pointhighlight = getpointhighlight(mousxplc, mousyplc);
 			linehighlight = getlinehighlight(mousxplc, mousyplc);
@@ -3013,19 +3107,20 @@ void overheadeditor(void)
 			{
 				wall[linehighlight].cstat ^= 1;
 				wall[linehighlight].cstat &= ~64;
-				if ((wall[linehighlight].nextwall >= 0) && ((keystatus[0x2a]|keystatus[0x36]) == 0))
+				if ((wall[linehighlight].nextwall >= 0) && ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) == 0))
 				{
 					wall[wall[linehighlight].nextwall].cstat &= ~(1+64);
 					wall[wall[linehighlight].nextwall].cstat |= (wall[linehighlight].cstat&1);
 				}
 				asksave = 1;
 			}
-			keystatus[0x30] = 0;
+			keystatus[KEY_B] = 0;
 		}
-		if (keystatus[0x21] > 0)  //F (F alone does nothing in 2D right now)
+		//F (F alone does nothing in 2D right now)
+		if (keystatus[KEY_F] > 0)
 		{
-			keystatus[0x21] = 0;
-			if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT-F (relative alignmment flip)
+			keystatus[KEY_F] = 0;
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT-F (relative alignmment flip)
 			{
 				linehighlight = getlinehighlight(mousxplc, mousyplc);
 				if (linehighlight >= 0)
@@ -3036,10 +3131,10 @@ void overheadeditor(void)
 				}
 			}
 		}
-
-		if (keystatus[0x18] > 0)  // O (ornament onto wall) (2D)
+		// O (ornament onto wall) (2D)
+		if (keystatus[KEY_O] > 0)
 		{
-			keystatus[0x18] = 0;
+			keystatus[KEY_O] = 0;
 			if ((pointhighlight&0xc000) == 16384)
 			{
 				asksave = 1;
@@ -3067,8 +3162,8 @@ void overheadeditor(void)
 				}
 			}
 		}
-
-		if (keystatus[0x33] > 0)  // , (2D)
+		// , (2D)
+		if (keystatus[KEY_COMMA] > 0)
 		{
 			if (highlightsectorcnt > 0)
 			{
@@ -3092,7 +3187,7 @@ void overheadeditor(void)
 					day /= k;
 				}
 
-				k = (keystatus[0x2a]|keystatus[0x36]);
+				k = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 
 				if (k == 0)
 				{
@@ -3142,7 +3237,7 @@ void overheadeditor(void)
 						j = nextspritesect[j];
 					}
 				}
-				if (k == 0) keystatus[0x33] = 0;
+				if (k == 0) keystatus[KEY_COMMA] = 0;
 				asksave = 1;
 			}
 			else
@@ -3150,12 +3245,12 @@ void overheadeditor(void)
 				if (pointhighlight >= 16384)
 				{
 					i = pointhighlight-16384;
-					if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 						sprite[i].ang = ((sprite[i].ang+2048-1)&2047);
 					else
 					{
 						sprite[i].ang = ((sprite[i].ang+2048-128)&2047);
-						keystatus[0x33] = 0;
+						keystatus[KEY_COMMA] = 0;
 					}
 
 					clearmidstatbar16();
@@ -3163,7 +3258,8 @@ void overheadeditor(void)
 				}
 			}
 		}
-		if (keystatus[0x34] > 0)  // .  (2D)
+		// .  (2D)
+		if (keystatus[KEY_PERIOD] > 0)
 		{
 			if (highlightsectorcnt > 0)
 			{
@@ -3187,7 +3283,7 @@ void overheadeditor(void)
 					day /= k;
 				}
 
-				k = (keystatus[0x2a]|keystatus[0x36]);
+				k = (keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]);
 
 				if (k == 0)
 				{
@@ -3237,7 +3333,7 @@ void overheadeditor(void)
 						j = nextspritesect[j];
 					}
 				}
-				if (k == 0) keystatus[0x34] = 0;
+				if (k == 0) keystatus[KEY_PERIOD] = 0;
 				asksave = 1;
 			}
 			else
@@ -3245,12 +3341,12 @@ void overheadeditor(void)
 				if (pointhighlight >= 16384)
 				{
 					i = pointhighlight-16384;
-					if ((keystatus[0x2a]|keystatus[0x36]) > 0)
+					if ((keystatus[KEY_L_SHIFT]|keystatus[KEY_R_SHIFT]) > 0)
 						sprite[i].ang = ((sprite[i].ang+2048+1)&2047);
 					else
 					{
 						sprite[i].ang = ((sprite[i].ang+2048+128)&2047);
-						keystatus[0x34] = 0;
+						keystatus[KEY_PERIOD] = 0;
 					}
 
 					clearmidstatbar16();
@@ -3258,20 +3354,21 @@ void overheadeditor(void)
 				}
 			}
 		}
-		if (keystatus[0x46] > 0)  //Scroll lock (set starting position)
+		//Scroll lock (set starting position)
+		if (keystatus[KEY_SCROLLLOCK] > 0)
 		{
 			startposx = posx;
 			startposy = posy;
 			startposz = posz;
 			startang = ang;
 			startsectnum = cursectnum;
-			keystatus[0x46] = 0;
+			keystatus[KEY_SCROLLLOCK] = 0;
 			asksave = 1;
 		}
-
-		if (keystatus[0x3f] > 0)  //F5
+		//F5 - show sector data
+		if (keystatus[KEY_F5] > 0)
 		{
-			keystatus[0x3f] = 0;
+			keystatus[KEY_F5] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3282,9 +3379,10 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x40] > 0)  //F6
+		//F6 show sprite data
+		if (keystatus[KEY_F6] > 0)
 		{
-			keystatus[0x40] = 0;
+			keystatus[KEY_F6] = 0;
 
 			if (pointhighlight >= 16384)
 			{
@@ -3303,9 +3401,10 @@ void overheadeditor(void)
 				ydim16 = ydim-STATUS2DSIZ;
 			}
 		}
-		if (keystatus[0x41] > 0)  //F7
+		//F7 - edit sector data
+		if (keystatus[KEY_F7] > 0)  
 		{
-			keystatus[0x41] = 0;
+			keystatus[KEY_F7] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3316,9 +3415,10 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x42] > 0)  //F8
+		//F8 - edit sprite data
+		if (keystatus[KEY_F8] > 0)
 		{
-			keystatus[0x42] = 0;
+			keystatus[KEY_F8] = 0;
 
 			if (pointhighlight >= 16384)
 			{
@@ -3337,11 +3437,11 @@ void overheadeditor(void)
 				ydim16 = ydim-STATUS2DSIZ;
 			}
 		}
-
-		if (keystatus[0x14] > 0)  // T (tag)
+		// T (tag)
+		if (keystatus[KEY_T] > 0)  
 		{
-			keystatus[0x14] = 0;
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //Ctrl-T
+			keystatus[KEY_T] = 0;
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //Ctrl-T
 			{
 				showtags ^= 1;
 				if (showtags == 0)
@@ -3349,7 +3449,7 @@ void overheadeditor(void)
 				else
 					printmessage16("Show tags ON");
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT
 			{
 				if (pointhighlight >= 16384)
 				{
@@ -3383,10 +3483,11 @@ void overheadeditor(void)
 				printmessage16("");
 			}
 		}
-		if (keystatus[0x23] > 0)  //H (Hi 16 bits of tag)
+		//H (Hi 16 bits of tag)
+		if (keystatus[KEY_H] > 0)  
 		{
-			keystatus[0x23] = 0;
-			if ((keystatus[0x1d]|keystatus[0x9d]) > 0)  //Ctrl-H
+			keystatus[KEY_H] = 0;
+			if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //Ctrl-H
 			{
 				pointhighlight = getpointhighlight(mousxplc, mousyplc);
 				linehighlight = getlinehighlight(mousxplc, mousyplc);
@@ -3407,7 +3508,7 @@ void overheadeditor(void)
 					asksave = 1;
 				}
 			}
-			else if ((keystatus[0x38]|keystatus[0xb8]) > 0)  //ALT
+			else if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]) > 0)  //ALT
 			{
 				if (pointhighlight >= 16384)
 				{
@@ -3440,9 +3541,10 @@ void overheadeditor(void)
 			}
 			printmessage16("");
 		}
-		if (keystatus[0x19] > 0)  // P (palookup #)
+		// P (palookup #)
+		if (keystatus[KEY_P] > 0)
 		{
-			keystatus[0x19] = 0;
+			keystatus[KEY_P] = 0;
 
 			for (i=0;i<numsectors;i++)
 				if (inside(mousxplc,mousyplc,i) == 1)
@@ -3461,7 +3563,8 @@ void overheadeditor(void)
 					break;
 				}
 		}
-		if (keystatus[0x12] > 0)  // E (status list)
+		// E (status list)
+		if (keystatus[KEY_E] > 0)
 		{
 			if (pointhighlight >= 16384)
 			{
@@ -3474,14 +3577,14 @@ void overheadeditor(void)
 
 			printmessage16("");
 
-			keystatus[0x12] = 0;
+			keystatus[KEY_E] = 0;
 		}
-
-		if (keystatus[0x0f] > 0)  //TAB
+		// TAB
+		if (keystatus[KEY_TAB] > 0)
 		{
 			clearmidstatbar16();
 
-			if ((keystatus[0x38]|keystatus[0xb8]|keystatus[0x1d]|keystatus[0x9d]) > 0)  //ALT or CTRL
+			if ((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT]|keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)  //ALT or CTRL
 			{
 				if (pointhighlight >= 16384)
 					showspritedata((short)pointhighlight-16384);
@@ -3497,13 +3600,12 @@ void overheadeditor(void)
 						break;
 					}
 			}
-			keystatus[0x0f] = 0;
+			keystatus[KEY_TAB] = 0;
 		}
-
 
 		if (highlightsectorcnt < 0)
 		{
-			if (keystatus[0x36] > 0)  //Right shift (point highlighting)
+			if (keystatus[KEY_R_SHIFT] > 0)  //Right shift (point highlighting)
 			{
 				if (highlightcnt == 0)
 				{
@@ -3543,7 +3645,7 @@ void overheadeditor(void)
 						templong = highlighty1; highlighty1 = highlighty2; highlighty2 = templong;
 					}
 
-					if ((keystatus[0x1d]|keystatus[0x9d]) > 0)
+					if ((keystatus[KEY_L_CTRL]|keystatus[KEY_R_CTRL]) > 0)
 					{
 						if ((linehighlight >= 0) && (linehighlight < MAXWALLS))
 						{
@@ -3591,9 +3693,10 @@ void overheadeditor(void)
 				}
 			}
 		}
+		
 		if (highlightcnt < 0)
 		{
-			if (keystatus[0xb8] > 0)  //Right alt (sector highlighting)
+			if (keystatus[KEY_R_ALT] > 0)  //Right alt (sector highlighting)
 			{
 				if (highlightsectorcnt == 0)
 				{
@@ -3683,7 +3786,6 @@ void overheadeditor(void)
 							}
 						}
 					}
-
 				}
 			}
 		}
@@ -3763,7 +3865,6 @@ void overheadeditor(void)
 					asksave = 1;
 				}
 			}
-
 		}
 
 		if ((bstatus&1) > 0)                //drag points
@@ -3924,25 +4025,30 @@ void overheadeditor(void)
 			posy = mousyplc;
 		}
 
-		if (((keystatus[buildkeys[8]] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
-		if (((keystatus[buildkeys[9]] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
+		// A Z zoom in out
+		if (((keystatus[KEY_A] > 0) || (bstatus&16)) && (zoom < 16384)) zoom += synctics*(zoom>>4);
+		if (((keystatus[KEY_Z] > 0) || (bstatus&32)) && (zoom > 24)) zoom -= synctics*(zoom>>4);
 
-		if (keystatus[0x22] > 0)  // G (grid on/off)
+		// G (grid on/off)
+		if (keystatus[KEY_G] > 0)
 		{
 			grid++;
 			if (grid == 7) grid = 0;
-			keystatus[0x22] = 0;
+			keystatus[KEY_G] = 0;
 		}
-		if (keystatus[0x26] > 0)  // L (grid lock)
+
+		// L (grid lock)
+		if (keystatus[KEY_L] > 0)
 		{
-			gridlock = 1-gridlock, keystatus[0x26] = 0;
+			gridlock = 1-gridlock, keystatus[KEY_L] = 0;
 			if (gridlock == 0)
 				printmessage16("Grid locking OFF");
 			else
 				printmessage16("Grid locking ON");
 		}
 
-		if (keystatus[0x24] > 0)  // J (join sectors)
+		// J (join sectors)
+		if (keystatus[KEY_J] > 0)
 		{
 			if (joinsector[0] >= 0)
 			{
@@ -4056,10 +4162,11 @@ void overheadeditor(void)
 						break;
 					}
 			}
-			keystatus[0x24] = 0;
+			keystatus[KEY_J] = 0;
 		}
 
-		if (((keystatus[0x38]|keystatus[0xb8])&keystatus[0x1f]) > 0) //ALT-S
+		// ALT-S
+		if (((keystatus[KEY_L_ALT]|keystatus[KEY_R_ALT])&keystatus[KEY_S]) > 0) 
 		{
 			if ((linehighlight >= 0) && (wall[linehighlight].nextwall == -1))
 			{
@@ -4080,9 +4187,10 @@ void overheadeditor(void)
 					printmessage16("Inner loop made into new sector.");
 				}
 			}
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
-		else if (keystatus[0x1f] > 0)  //S
+		// S
+		else if (keystatus[KEY_S] > 0)
 		{
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -4166,10 +4274,11 @@ void overheadeditor(void)
 				asksave = 1;
 			}
 
-			keystatus[0x1f] = 0;
+			keystatus[KEY_S] = 0;
 		}
 
-		if (keystatus[0x2e] > 0)  // C (make circle of points)
+		// C (make circle of points)
+		if (keystatus[KEY_C] > 0)
 		{
 			if (circlewall >= 0)
 			{
@@ -4180,22 +4289,26 @@ void overheadeditor(void)
 				if (linehighlight >= 0)
 					circlewall = linehighlight;
 			}
-			keystatus[0x2e] = 0;
+			keystatus[KEY_C] = 0;
 		}
-		if (keystatus[0x4a] > 0)  // -
+
+		// -
+		if (keystatus[KEY_MINUS] > 0)
 		{
 			if (circlepoints > 1)
 				circlepoints--;
-			keystatus[0x4a] = 0;
+			keystatus[KEY_MINUS] = 0;
 		}
-		if (keystatus[0x4e] > 0)  // +
+
+		// +
+		if (keystatus[KEY_PLUS] > 0)
 		{
 			if (circlepoints < 63)
 				circlepoints++;
-			keystatus[0x4e] = 0;
+			keystatus[KEY_PLUS] = 0;
 		}
 
-		bad = (keystatus[0x39] > 0);  //Gotta do this to save lots of 3 spaces!
+		bad = (keystatus[KEY_SPACE] > 0);  //Gotta do this to save lots of 3 spaces!
 
 		if (circlewall >= 0)
 		{
@@ -4260,7 +4373,7 @@ void overheadeditor(void)
 				if (bad > 0)
 				{
 					bad = 0;
-					keystatus[0x39] = 0;
+					keystatus[KEY_SPACE] = 0;
 					asksave = 1;
 					printmessage16("Circle points inserted.");
 					circlewall = -1;
@@ -4268,9 +4381,10 @@ void overheadeditor(void)
 			}
 		}
 
-		if (bad > 0)   //Space bar test
+		// Space bar test
+		if (bad > 0)
 		{
-			keystatus[0x39] = 0;
+			keystatus[KEY_SPACE] = 0;
 			adjustmark(&mousxplc,&mousyplc,newnumwalls);
 			if (checkautoinsert(mousxplc,mousyplc,newnumwalls) == 1)
 			{
@@ -4829,10 +4943,11 @@ void overheadeditor(void)
 			}
 		}
 
-		if (keystatus[0x1c] > 0) //Left Enter
+		// Left Enter - and left enter + shift
+		if (keystatus[KEY_ENTER] > 0) 
 		{
-			keystatus[0x1c] = 0;
-			if (keystatus[0x2a]&keystatus[0x1d])
+			keystatus[KEY_ENTER] = 0;
+			if (keystatus[KEY_L_SHIFT]&keystatus[KEY_R_SHIFT])
 			{
 				printmessage16("CHECKING ALL POINTERS!");
 				for(i=0;i<numsectors;i++)
@@ -4872,25 +4987,27 @@ void overheadeditor(void)
 			}
 		}
 
-		if ((keystatus[0x0e] > 0) && (newnumwalls >= numwalls)) //Backspace
+		// Backspace
+		if ((keystatus[KEY_BACKSPACE] > 0) && (newnumwalls >= numwalls))
 		{
 			if (newnumwalls > numwalls)
 			{
 				newnumwalls--;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				keystatus[KEY_BACKSPACE] = 0;
 			}
 			if (newnumwalls == numwalls)
 			{
 				newnumwalls = -1;
 				asksave = 1;
-				keystatus[0x0e] = 0;
+				keystatus[KEY_BACKSPACE] = 0;
 			}
 		}
 
-		if ((keystatus[0xd3] > 0) && (keystatus[0x9d] > 0) && (numwalls >= 0))
-		{                                                      //sector delete
-			keystatus[0xd3] = 0;
+		// right control + delete //sector delete
+		if ((keystatus[KEY_DELETE] > 0) && (keystatus[KEY_R_CTRL] > 0) && (numwalls >= 0))
+		{
+			keystatus[KEY_DELETE] = 0;
 
 			sucksect = -1;
 			for(i=0;i<numsectors;i++)
@@ -4926,7 +5043,8 @@ void overheadeditor(void)
 				}
 		}
 
-		if ((keystatus[0xd3] > 0) && (pointhighlight >= 0))
+		// delete
+		if ((keystatus[KEY_DELETE] > 0) && (pointhighlight >= 0))
 		{
 			if ((pointhighlight&0xc000) == 16384)   //Sprite Delete
 			{
@@ -4935,10 +5053,11 @@ void overheadeditor(void)
 				updatenumsprites();
 				asksave = 1;
 			}
-			keystatus[0xd3] = 0;
+			keystatus[KEY_DELETE] = 0;
 		}
 
-		if (keystatus[0xd2] > 0)  //InsertPoint
+		// InsertPoint
+		if (keystatus[KEY_INSERT] > 0)
 		{
 			if (highlightsectorcnt >= 0)
 			{
@@ -5032,7 +5151,7 @@ void overheadeditor(void)
 
 				asksave = 1;
 			}
-			keystatus[0xd2] = 0;
+			keystatus[KEY_INSERT] = 0;
 		}
 
 		ExtCheckKeys();
@@ -5051,17 +5170,20 @@ void overheadeditor(void)
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		if (keystatus[buildkeys[14]] > 0)
+		// To sawp to 3d
+		// if (keystatus[KEY_F2] > 0)
+		// {
+		// 	updatesector(posx,posy,&cursectnum);
+		// 	if (cursectnum >= 0)
+		// 		// keystatus[buildkeys[14]] = 2;
+		// 		keystatus[KEY_F2] = 2;
+		// 	else
+		// 		printmessage16("Arrow must be inside a sector before entering 3D mode.");
+		// }
+
+		if (keystatus[KEY_ESCAPE] > 0)
 		{
-			updatesector(posx,posy,&cursectnum);
-			if (cursectnum >= 0)
-				keystatus[buildkeys[14]] = 2;
-			else
-				printmessage16("Arrow must be inside a sector before entering 3D mode.");
-		}
-		if (keystatus[1] > 0)
-		{
-			keystatus[1] = 0;
+			keystatus[KEY_ESCAPE] = 0;
 			printmessage16("(N)ew, (L)oad/from (G)RP, (S)ave, save (A)s, (Q)uit");
 			showframe();
 			bflushchars();
@@ -5076,9 +5198,9 @@ void overheadeditor(void)
 
 				ch = bgetchar();
 
-				if (keystatus[1] > 0)
+				if (keystatus[KEY_ESCAPE] > 0)
 				{
-					keystatus[1] = 0;
+					keystatus[KEY_ESCAPE] = 0;
 					bad = 0;
 					printmessage16("");
 				}
@@ -5088,7 +5210,7 @@ void overheadeditor(void)
 					printmessage16("Are you sure you want to start a new board? (Y/N)");
 					showframe();
 					bflushchars(); ch = 0;
-					while (keystatus[1] == 0)
+					while (keystatus[KEY_ESCAPE] == 0)
 					{
 						if (handleevents()) {
 							if (quitevent) {
@@ -5344,7 +5466,7 @@ void overheadeditor(void)
 						startsectnum = cursectnum;
 					}
 					showframe();
-					keystatus[0x1c] = 0;
+					keystatus[KEY_ENTER] = 0;
 				}
 				else if (ch == 'a' || ch == 'A')  //A
 				{
@@ -5415,7 +5537,7 @@ void overheadeditor(void)
 
 						ch = bgetchar();
 
-						if (keystatus[1] > 0) bad = 1;
+						if (keystatus[KEY_ESCAPE] > 0) bad = 1;
 						else if (ch == 13) bad = 2;
 						else if (ch > 0) {
 							if (i > 0 && (ch == 8 || ch == 127)) {
@@ -5432,13 +5554,13 @@ void overheadeditor(void)
 					}
 					if (bad == 1)
 					{
-						keystatus[1] = 0;
+						keystatus[KEY_ESCAPE] = 0;
 						printmessage16("Operation cancelled");
 						showframe();
 					}
 					if (bad == 2)
 					{
-						keystatus[0x1c] = 0;
+						keystatus[KEY_ENTER] = 0;
 
 						strcat(filename, ".map");
 						Bsprintf(buffer,"Saving to %s...",filename);
@@ -5500,7 +5622,7 @@ void overheadeditor(void)
 					printmessage16("Are you sure you want to quit?");
 					showframe();
 					bflushchars();
-					while (keystatus[1] == 0)
+					while (keystatus[KEY_ESCAPE] == 0)
 					{
 						if (handleevents()) {
 							if (quitevent) quitevent = 0;
@@ -5514,7 +5636,7 @@ void overheadeditor(void)
 							if (asksave) {
 								printmessage16("Save changes?");
 								showframe();
-								while (keystatus[1] == 0)
+								while (keystatus[KEY_ESCAPE] == 0)
 								{
 									if (handleevents()) {
 										if (quitevent) break;	// like saying no
@@ -5565,7 +5687,6 @@ void overheadeditor(void)
 			}
 			clearkeys();
 		}
-
 		//nextpage();
 	}
 
@@ -6138,7 +6259,6 @@ short getnumber256(char namestart[80], short num, int maxnumber, char sign)
 
 	return((short)oldnum);
 }
-
 
 void clearfilenames(void)
 {
