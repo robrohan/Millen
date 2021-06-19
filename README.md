@@ -2,7 +2,7 @@
 
 Square is a fork of a fork of the Build Engine. This is forked from jfbuild by Jonathon Fowler, which is an updated version of Ken Silverman's original Build Engine (best known for Duke Nuke'em 3D (the 1996 version)).
 
-Currently, this port just adds Webassembly support, code for my own little play around game, as well as some [update keybindings](doc/editorkeys.md) for the Build Level Editor.
+Currently, this port just adds Webassembly support, code for my own little play around game, as well as some [updated keybindings](doc/editorkeys.md) for the Build Level Editor.
 
 ---
 
