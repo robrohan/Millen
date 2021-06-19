@@ -112,7 +112,19 @@ static int screentilt = 0, oscreentilt = 0;
 static int fvel, svel, avel;
 static int fvel2, svel2, avel2;
 
-char option[NUMOPTIONS] = {1, 1, 1, 0, 0, 0, 1, (4 << 4) | 1 | 2 | 4};
+// These options are what wind up in the config file
+// positions are kind of random
+
+char option[NUMOPTIONS] = {
+    1, 
+    1, 
+    1, // music
+    3, // mouse &1 joystick &2
+    0, 
+    0, 
+    1, 
+    (4 << 4) | 1 | 2 | 4  // sample rate >>4
+};
 // int keys[NUMKEYS] = {
 //     // up  dn   lf   rt   ..   ..   ..   ..    sp
 //     0xc8, 0xd0, 0xcb, 0xcd, 0x2a, 0x9d, 0x1d, 0x39,
@@ -134,7 +146,9 @@ int keys[NUMKEYS] = {
     //14      15      16   17    18      19  
     0x9c, KEY_ENTER, 0xd, 0xc, KEY_TAB, 0x2b};
 
-int xdimgame = 640, ydimgame = 480, bppgame = 8;
+int xdimgame = 1024, 
+    ydimgame = 768, 
+    bppgame = 24;
 int forcesetup = 1;
 
 static int digihz[8] = {6000, 8000, 11025, 16000, 22050, 32000, 44100, 48000};

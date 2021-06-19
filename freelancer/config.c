@@ -66,12 +66,12 @@ enum {
 	type_hex = 3,
 };
 
-static int tmprenderer = -1;
+static int tmprenderer = 3;
 static int tmpbrightness = -1;
-static int tmpsamplerate = -1;
-static int tmpmusic = -1;
-static int tmpmouse = -1;
-static int tmpjoystick = -1;
+static int tmpsamplerate = 6;
+static int tmpmusic = 1;
+static int tmpmouse = 1;
+static int tmpjoystick = 1;
 
 static struct {
 	const char *name;
@@ -148,7 +148,7 @@ static struct {
 	{ "mousesensitivity", type_double, &msens,
 		"; Mouse sensitivity\n"
 	},
-	{ "keyforward", type_hex, &keys[0],
+	{ ";keyforward", type_hex, &keys[0],
 		"; Key Settings\n"
 		";  Here's a map of all the keyboard scan codes: NOTE: values are listed in hex!\n"
 		"; +---------------------------------------------------------------------------------------------+\n"
@@ -299,12 +299,13 @@ int writesetup(const char *fn)
 
 	tmpbrightness = brightness;
 #if USE_POLYMOST
-	tmprenderer = getrendermode();
+	// TODO: what's all this about?
+	tmprenderer = 3; //getrendermode();
 #endif
-	tmpsamplerate = option[7]>>4;
-	tmpmusic = option[2];
-	tmpmouse = !!(option[3]&1);
-	tmpjoystick = !!(option[3]&2);
+	tmpsamplerate = 6; // option[7]>>4;
+	tmpmusic = 1; // option[2];
+	tmpmouse = 1; // !!(option[3]&1);
+	tmpjoystick = 1; //!!(option[3]&2);
 
 	for (item = 0; configspec[item].name; item++) {
 		if (configspec[item].doc) {

@@ -66,7 +66,7 @@ enum {
 	type_hex = 3,
 };
 
-static int tmprenderer = -1;
+static int tmprenderer = 3;
 static int tmpbrightness = -1;
 
 static struct {

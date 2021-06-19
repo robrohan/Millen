@@ -32,7 +32,7 @@ H           = Set high tag (ALT for sprites and walls)
 
 - To delete a vertex in 2d mode, drag one onto another
 
-### Full Keyboard Shortcuts
+### 2D / 3D Keyboard Shortcuts
 
 | Key        | 2D Mode     | 3D Mode                    | Modifiers            |
 | ---------- | ----------- | -------------------------- | -------------------- |
@@ -80,7 +80,7 @@ H           = Set high tag (ALT for sprites and walls)
 | ENTER      | Check Pnts  | Paste texture              | CTRL to all walls    |
 | DELETE     | Del sprite  | Del Sprite                 | R CTRL Sector Del    |
 | INSERT     | +Wall point |                            |                      |
-| ESC        | Save / Quit |                            |                      |
+| ESCAPE     | Save / Quit |                            |                      |
 | F11        |             | Brightness (not working?)  |                      |
 | F12        |             | Save screenshot            |                      |
 | V          |             | Search texture: x2 for all |                      |
@@ -93,6 +93,27 @@ H           = Set high tag (ALT for sprites and walls)
 | E          |             | Toggle floor expansion     |                      |
 | R          |             | Rotate floor / ceiling     |                      |
 | F          |             | Flip floor / ceiling       | ALT alignment        |
+
+### Texture Browser
+
+In 3D view `V` opens the texture browser initially showing all currently in use textures.
+
+| Key       | Does                 |
+| --------- | -------------------- |
+| V         | Show all textures    |
+| +=        | Make tiles bigger    |
+| -\_       | Make tiles smaller   |
+| ↑         | Select tite above    |
+| ↓         | Select tile below    |
+| →         | Select tile left     |
+| ←         | Select tile right    |
+| PAGE UP   | Up a page of tiles   |
+| PAGE DOWN | Down a page of tiles |
+| G         | Goto tile number     |
+| ENTER     | Select tile          |
+| ESCAPE    | Close tile selector  |
+
+---
 
 ## Original Build Editor Bindings (for reference)
 
@@ -159,3 +180,18 @@ H           = Set high tag (ALT for sprites and walls)
 | KP -\_     | -Circle Pts | Darken the focused item    |                     |
 | KP +=      | +Circle Pts | Lighten the focused item   |                     |
 | KP ENTER   | 3D view     | 2D view                    |                     |
+
+| Key       | Does                 |
+| --------- | -------------------- |
+| V         | Show all textures    |
+| KP TIMES  | Make tiles bigger    |
+| KP DIV    | Make tiles smaller   |
+| ↑         | Select tite above    |
+| ↓         | Select tile below    |
+| →         | Select tile left     |
+| ←         | Select tile right    |
+| PAGE UP   | Up a page of tiles   |
+| PAGE DOWN | Down a page of tiles |
+| G         | Goto tile number     |
+| ENTER     | Select tile          |
+| ESCAPE    | Close tile selector  |

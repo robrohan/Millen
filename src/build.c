@@ -17,6 +17,7 @@
 #include "winlayer.h"
 #endif
 
+#define DEFAULT_SPRITE 666
 
 #define TIMERINTSPERSECOND 120
 
@@ -65,7 +66,11 @@ extern int startposx, startposy, startposz;
 extern short startang, startsectnum;
 extern intptr_t frameplace;
 extern int ydim16, halfxdim16, midydim16;
-int xdim2d = 640, ydim2d = 480, xdimgame = 640, ydimgame = 480, bppgame = 8;
+int xdim2d = 1024, 
+		ydim2d = 768, 
+		xdimgame = 1024, 
+		ydimgame = 768, 
+		bppgame = 24;
 int forcesetup = 1;
 
 extern int cachesize, artsize;
@@ -2315,6 +2320,7 @@ void editinput(void)
 				sprite[i].lotag = 0;
 				sprite[i].hitag = 0;
 				sprite[i].extra = -1;
+				sprite[i].picnum = DEFAULT_SPRITE;
 
 				for(k=0;k<MAXTILES;k++)
 					localartfreq[k] = 0;
@@ -2330,6 +2336,7 @@ void editinput(void)
 				else
 					sprite[i].picnum = 0;
 
+				// Not sure this works.
 				if (somethingintab == 3)
 				{
 					sprite[i].picnum = temppicnum;
@@ -2354,6 +2361,7 @@ void editinput(void)
 				}
 
 				j = ((tilesizy[sprite[i].picnum]*sprite[i].yrepeat)<<1);
+
 				if ((sprite[i].cstat&128) == 0)
 					sprite[i].z = min(max(hitz,getceilzofslope(hitsect,hitx,hity)+(j<<1)),getflorzofslope(hitsect,hitx,hity));
 				else
@@ -2456,6 +2464,7 @@ unsigned char changechar(unsigned char dachar, int dadir, unsigned char smooshya
 	return(dachar);
 }
 
+// Tile browser
 int gettile(int tilenum)
 {
 	char snotbuf[80];
@@ -2467,7 +2476,7 @@ int gettile(int tilenum)
 	xtiles = (xdim>>6); ytiles = (ydim>>6); tottiles = xtiles*ytiles;
 	otilenum = tilenum;
 
-	keystatus[0x2f] = 0;
+	keystatus[KEY_V] = 0;
 	for(i=0;i<MAXTILES;i++)
 	{
 		localartfreq[i] = 0;
@@ -2530,7 +2539,8 @@ int gettile(int tilenum)
 	topleft = ((tilenum/(xtiles<<gettilezoom))*(xtiles<<gettilezoom))-(xtiles<<gettilezoom);
 	if (topleft < 0) topleft = 0;
 	if (topleft > MAXTILES-(tottiles<<(gettilezoom<<1))) topleft = MAXTILES-(tottiles<<(gettilezoom<<1));
-	while ((keystatus[0x1c]|keystatus[1]) == 0)
+
+	while ((keystatus[KEY_ENTER]|keystatus[KEY_ESCAPE]) == 0)
 	{
 		drawtilescreen(topleft,tilenum);
 		OSD_Draw();
@@ -2543,45 +2553,53 @@ int gettile(int tilenum)
 		synctics = totalclock-lockclock;
 		lockclock += synctics;
 
-		if ((keystatus[0x37] > 0) && (gettilezoom < 2))
+		// Tile zoom out
+		if ((keystatus[KEY_MINUS] > 0) && (gettilezoom < 2))
 		{
 			gettilezoom++;
 			topleft = ((tilenum/(xtiles<<gettilezoom))*(xtiles<<gettilezoom))-(xtiles<<gettilezoom);
 			if (topleft < 0) topleft = 0;
 			if (topleft > MAXTILES-(tottiles<<(gettilezoom<<1))) topleft = MAXTILES-(tottiles<<(gettilezoom<<1));
-			keystatus[0x37] = 0;
+			keystatus[KEY_MINUS] = 0;
 		}
-		if ((keystatus[0xb5] > 0) && (gettilezoom > 0))
+
+		// Tile zoom in
+		if ((keystatus[KEY_PLUS] > 0) && (gettilezoom > 0))
 		{
 			gettilezoom--;
 			topleft = ((tilenum/(xtiles<<gettilezoom))*(xtiles<<gettilezoom))-(xtiles<<gettilezoom);
 			if (topleft < 0) topleft = 0;
 			if (topleft > MAXTILES-(tottiles<<(gettilezoom<<1))) topleft = MAXTILES-(tottiles<<(gettilezoom<<1));
-			keystatus[0xb5] = 0;
+			keystatus[KEY_PLUS] = 0;
 		}
-		if ((keystatus[0xcb] > 0) && (tilenum > 0))
-			tilenum--, keystatus[0xcb] = 0;
-		if ((keystatus[0xcd] > 0) && (tilenum < MAXTILES-1))
-			tilenum++, keystatus[0xcd] = 0;
-		if ((keystatus[0xc8] > 0) && (tilenum >= (xtiles<<gettilezoom)))
-			tilenum-=(xtiles<<gettilezoom), keystatus[0xc8] = 0;
-		if ((keystatus[0xd0] > 0) && (tilenum < MAXTILES-(xtiles<<gettilezoom)))
-			tilenum+=(xtiles<<gettilezoom), keystatus[0xd0] = 0;
-		if ((keystatus[0xc9] > 0) && (tilenum >= (xtiles<<gettilezoom)))
+
+		// Nav keys
+		if ((keystatus[KEY_LEFT] > 0) && (tilenum > 0))
+			tilenum--, keystatus[KEY_LEFT] = 0;
+		if ((keystatus[KEY_RIGHT] > 0) && (tilenum < MAXTILES-1))
+			tilenum++, keystatus[KEY_RIGHT] = 0;
+		if ((keystatus[KEY_UP] > 0) && (tilenum >= (xtiles<<gettilezoom)))
+			tilenum-=(xtiles<<gettilezoom), keystatus[KEY_UP] = 0;
+		if ((keystatus[KEY_DOWN] > 0) && (tilenum < MAXTILES-(xtiles<<gettilezoom)))
+			tilenum+=(xtiles<<gettilezoom), keystatus[KEY_DOWN] = 0;
+		
+		// Nav by pages of images
+		if ((keystatus[KEY_PG_UP] > 0) && (tilenum >= (xtiles<<gettilezoom)))
 		{
 			tilenum-=(tottiles<<(gettilezoom<<1));
 			if (tilenum < 0) tilenum = 0;
-			keystatus[0xc9] = 0;
+			keystatus[KEY_PG_UP] = 0;
 		}
-		if ((keystatus[0xd1] > 0) && (tilenum < MAXTILES-(xtiles<<gettilezoom)))
+		if ((keystatus[KEY_PG_DOWN] > 0) && (tilenum < MAXTILES-(xtiles<<gettilezoom)))
 		{
 			tilenum+=(tottiles<<(gettilezoom<<1));
 			if (tilenum >= MAXTILES) tilenum = MAXTILES-1;
-			keystatus[0xd1] = 0;
+			keystatus[KEY_PG_DOWN] = 0;
 		}
-		if (keystatus[0x2f] > 0)   //V
+
+		if (keystatus[KEY_V] > 0)   //V
 		{
-			keystatus[0x2f] = 0;
+			keystatus[KEY_V] = 0;
 			if (tilenum < localartlookupnum)
 				tilenum = localartlookup[tilenum];
 			else
@@ -2590,7 +2608,9 @@ int gettile(int tilenum)
 			for(i=0;i<MAXTILES;i++)
 				localartlookup[i] = i;
 		}
-		if (keystatus[0x22] > 0)       //G (goto)
+
+		// GOTO
+		if (keystatus[KEY_G] > 0)       //G (goto)
 		{
 			if (tilenum < localartlookupnum)         //Automatically press 'V'
 				tilenum = localartlookup[tilenum];
@@ -2600,7 +2620,7 @@ int gettile(int tilenum)
 			for(i=0;i<MAXTILES;i++)
 				localartlookup[i] = i;
 
-			keystatus[0x22] = 0;
+			keystatus[KEY_G] = 0;
 			bflushchars();
 
 			j = tilenum;
@@ -2629,13 +2649,15 @@ int gettile(int tilenum)
 			}
 			clearkeys();
 		}
+		
 		while (tilenum < topleft) topleft -= (xtiles<<gettilezoom);
 		while (tilenum >= topleft+(tottiles<<(gettilezoom<<1))) topleft += (xtiles<<gettilezoom);
+		
 		if (topleft < 0) topleft = 0;
 		if (topleft > MAXTILES-(tottiles<<(gettilezoom<<1))) topleft = MAXTILES-(tottiles<<(gettilezoom<<1));
 	}
 
-	if (keystatus[0x1c] == 0)
+	if (keystatus[KEY_ENTER] == 0)
 	{
 		tilenum = otilenum;
 	}
@@ -2650,8 +2672,8 @@ int gettile(int tilenum)
 		else
 			tilenum = otilenum;
 	}
-	keystatus[0x1] = 0;
-	keystatus[0x1c] = 0;
+	keystatus[KEY_ESCAPE] = 0;
+	keystatus[KEY_ENTER] = 0;
 	return(tilenum);
 }
 
@@ -4225,6 +4247,7 @@ void overheadeditor(void)
 				sprite[i].lotag = 0;
 				sprite[i].hitag = 0;
 				sprite[i].extra = -1;
+				sprite[i].picnum = DEFAULT_SPRITE;
 
 				sprite[i].z = getflorzofslope(sucksect,dax,day);
 				if ((sprite[i].cstat&128) != 0)
@@ -6387,13 +6410,13 @@ int menuselect(int newpathmode)
 		enddrawing();
 		showframe();
 
-		keystatus[0xcb] = 0;
-		keystatus[0xcd] = 0;
-		keystatus[0xc8] = 0;
-		keystatus[0xd0] = 0;
-		keystatus[0x1c] = 0;	//enter
-		keystatus[0xf] = 0;		//tab
-		keystatus[1] = 0;		//esc
+		keystatus[KEY_A] = 0;
+		keystatus[KEY_D] = 0;
+		keystatus[KEY_W] = 0;
+		keystatus[KEY_S] = 0;
+		keystatus[KEY_ENTER] = 0;	//enter
+		keystatus[KEY_TAB] = 0;		//tab
+		keystatus[KEY_ESCAPE] = 0;		//esc
 		ch = 0;                      //Interesting fakery of ch = getch()
 		while (ch == 0)
 		{
@@ -6404,10 +6427,11 @@ int menuselect(int newpathmode)
 				}
 			}
 			ch = bgetchar();
-			if (keystatus[0xcb] > 0) ch = 9;		// left arr
-			if (keystatus[0xcd] > 0) ch = 9;		// right arr
-			if (keystatus[0xc8] > 0) ch = 72;		// up arr
-			if (keystatus[0xd0] > 0) ch = 80;		// down arr
+			// ??
+			if (keystatus[KEY_A] > 0) ch = 9;		// left arr
+			if (keystatus[KEY_D] > 0) ch = 9;		// right arr
+			if (keystatus[KEY_W] > 0) ch = 72;		// up arr
+			if (keystatus[KEY_S] > 0) ch = 80;		// down arr
 
 		}
 
@@ -7074,9 +7098,6 @@ void keytimerstuff(void)
 	
 	if (keystatus[KEY_W] > 0) vel = min(vel+8,127);
 	if (keystatus[KEY_S] > 0) vel = max(vel-8,-128);
-
-
-
 
 	if (angvel < 0) angvel = min(angvel+12,0);
 	if (angvel > 0) angvel = max(angvel-12,0);
