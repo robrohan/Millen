@@ -4,6 +4,7 @@
 // This file has been modified from Ken Silverman's original release
 // by Jonathon Fowler (jf@jonof.id.au)
 
+// clang-format off
 #include "game.h"
 #include "build.h"
 #include "cache1d.h"
@@ -19,6 +20,7 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
+// clang-format on
 
 #define TIMERINTSPERSECOND 140 // 280
 #define MOVESPERSECOND 40
@@ -101,32 +103,65 @@ typedef struct
     int x, y, z;
 } point3d;
 
+/** Struct to player handle input */
 typedef struct
 {
-    signed char fvel, svel, avel;
+    /**
+     * Forward velocity
+     */
+    signed char fvel;
+    /**
+     * Sideways velocity
+     */
+    signed char svel;
+    /**
+     * Angle velocity. Only left and right
+     */
+    signed char avel;
+    /**
+     * Angle velocity horizontality
+     */
+    signed char ahvel;
+    /**
+     * 0 = Stand High
+     * 1 = Stand low
+     * 2 = Look up
+     * 3 = Look down
+     * 4 = Zoom in
+     * 5 = Zoom out
+     * 8 = Run
+     * 10 = Use
+     * 11 = Shoot
+     */
     short bits;
 } input;
 
 static int screentilt = 0, oscreentilt = 0;
 
-static int fvel, svel, avel;
+/** forward, sideways and angle velocity */
+static int fvel, svel, avel, ahvel;
+/** forward, sideways and angle velocity
+ * Player 2 */
 static int fvel2, svel2, avel2;
 
-// These options are what wind up in the config file
-// positions are kind of random
-char option[NUMOPTIONS] = {
-    1,
-    1,
-    1, // music
-    3, // mouse &1 joystick &2
-    0,
-    0,
-    1,
-    (4 << 4) | 1 | 2 | 4 // sample rate >>4
-};
+/**
+ * These options are what wind up in the config file
+ * positions are kind of random
+ * 0 =
+ * 1 =
+ * 2 = music (on or off)
+ * 3 = mouse &1 and  joystick &2
+ * 4 =
+ * 5 =
+ * 6 = sample rate >>4
+ */
+char option[NUMOPTIONS] = {1, 1, 1, 3, 0, 0, 1, (4 << 4) | 1 | 2 | 4};
+/** Wind up in the config file: Width X Height, bpp */
 int xdimgame = 1024, ydimgame = 768, bppgame = 24;
+/** Wind up in the config file. Only seems to matter if you have the gui on */
 int forcesetup = 1;
 
+/** options for sample rate? */
 static int digihz[8] = {6000, 8000, 11025, 16000, 22050, 32000, 44100, 48000};
 
 static unsigned char frame2draw[MAXPLAYERS];
@@ -135,6 +170,7 @@ static int frameskipcnt[MAXPLAYERS];
 #define LAVASIZ 128
 #define LAVALOGSIZ 7
 #define LAVAMAXDROPS 32
+
 static unsigned char lavabakpic[(LAVASIZ + 4) * (LAVASIZ + 4)], lavainc[LAVASIZ];
 static int lavanumdrops, lavanumframes;
 static int lavadropx[LAVAMAXDROPS], lavadropy[LAVAMAXDROPS];
@@ -442,7 +478,7 @@ void gameloop(void)
     {
         if (quitevent)
         {
-            keystatus[1] = 1;
+            keystatus[KEY_ESCAPE] = 1;
             quitevent = 0;
             return;
         }
@@ -462,22 +498,25 @@ void gameloop(void)
 
     if (typemode == 0) // if normal game keys active
     {
-        if ((keystatus[0x2a] & keystatus[0x36] & keystatus[0x13]) > 0) // Sh.Sh.R (replay)
+        // Replay
+        if ((keystatus[KEY_L_SHIFT] & keystatus[KEY_R_SHIFT] & keystatus[KEY_R]) > 0) // Sh.Sh.R (replay)
         {
-            keystatus[0x13] = 0;
+            keystatus[KEY_R] = 0;
             playback();
         }
 
-        if (keystatus[0x26] & (keystatus[0x1d] | keystatus[0x9d])) // Load game
+        // Load game
+        if (keystatus[KEY_L] & (keystatus[KEY_R_CTRL] | keystatus[KEY_L_CTRL]))
         {
-            keystatus[0x26] = 0;
+            keystatus[KEY_L] = 0;
             loadgame();
             drawstatusbar(screenpeek); // Andy did this
         }
 
-        if (keystatus[0x1f] & (keystatus[0x1d] | keystatus[0x9d])) // Save game
+        // Save game
+        if (keystatus[KEY_S] & (keystatus[KEY_R_CTRL] | keystatus[KEY_L_CTRL]))
         {
-            keystatus[0x1f] = 0;
+            keystatus[KEY_S] = 0;
             savegame();
         }
     }
@@ -540,7 +579,6 @@ int app_main(int argc, char const *const argv[])
         }
     }
 #endif
-
     {
         char *supportdir = Bgetsupportdir(1);
         char *appdir = Bgetappdir();
@@ -607,7 +645,7 @@ int app_main(int argc, char const *const argv[])
                 int worked = chdir(dirpath);
                 if (worked == -1)
                 {
-                    buildprintf("Couldn't change directoires");
+                    buildprintf("Couldn't change directory");
                 }
             }
             free(supportdir);
@@ -624,6 +662,7 @@ int app_main(int argc, char const *const argv[])
     wm_setapptitle("Freelancer");
 
     Bstrcpy(boardfilename, "nukeland.map");
+
     for (i = 1; i < argc; i++)
     {
 #ifdef _WIN32
@@ -655,6 +694,7 @@ int app_main(int argc, char const *const argv[])
     }
 
     initgroupfile("stuff.dat");
+
     if (initengine())
     {
         wm_msgbox(NULL, "There was a problem initialising the engine: %s.\n", engineerrstr);
@@ -3679,6 +3719,7 @@ void processinput(short snum)
         doubvel = TICSPERFRAME;
         if ((ssync[snum].bits & 256) > 0) // Lt. shift makes turn velocity 50% faster
             doubvel += (TICSPERFRAME >> 1);
+
         ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 4);
         ang[snum] &= 2047;
     }
@@ -3690,7 +3731,7 @@ void processinput(short snum)
         {
             hvel[snum] = 0;
             if (snum == myconnectindex)
-                fvel = 0, svel = 0, avel = 0, keystatus[3] = 1;
+                fvel = 0, svel = 0, avel = 0, keystatus[KEY_B] = 1;
 
             deaths[snum]++;
             health[snum] = 100;
@@ -5209,10 +5250,12 @@ void getinput(void)
         avel = min(avel + 12 * TICSPERFRAME, 0);
     if (avel > 0)
         avel = max(avel - 12 * TICSPERFRAME, 0);
+
     if (svel < 0)
         svel = min(svel + 2 * TICSPERFRAME, 0);
     if (svel > 0)
         svel = max(svel - 2 * TICSPERFRAME, 0);
+
     if (fvel < 0)
         fvel = min(fvel + 2 * TICSPERFRAME, 0);
     if (fvel > 0)
@@ -5244,6 +5287,7 @@ void getinput(void)
             avel2 = min(avel2 + 12 * TICSPERFRAME, 0);
         if (avel2 > 0)
             avel2 = max(avel2 - 12 * TICSPERFRAME, 0);
+
         if (svel2 < 0)
             svel2 = min(svel2 + 2 * TICSPERFRAME, 0);
         if (svel2 > 0)
@@ -5275,11 +5319,16 @@ void getinput(void)
     loc.fvel = min(max(fvel, -128 + 8), 127 - 8);
     loc.svel = min(max(svel, -128 + 8), 127 - 8);
     loc.avel = min(max(avel, -128 + 16), 127 - 16);
+    loc.ahvel = min(max(ahvel, -128 + 16), 127 - 16);
 
     getmousevalues(&mousx, &mousy, &bstatus);
     loc.avel = min(max(loc.avel + (mousx << 3), -128), 127);
     // Stop doing forward movment via the mouse
     // loc.fvel = min(max(loc.fvel-(mousy<<3),-128),127);
+    signed char last_ah = loc.ahvel;
+    loc.ahvel = min(max(loc.ahvel - (mousy << 3), -128), 127);
+
+    // printf("--> %d \n", last_ah + loc.ahvel);
 
     loc.bits = (locselectedgun << 13);
     if (typemode == 0) // if normal game keys active
@@ -5287,13 +5336,15 @@ void getinput(void)
         loc.bits |= (keystatus[KEY_M] << 9);                       // M (be master)
         loc.bits |= ((keystatus[KEY_RETURN_KP_ENTER] == 1) << 12); // Map mode
     }
-    loc.bits |= keystatus[KEY_Q];                                // Stand high
-    loc.bits |= (keystatus[KEY_Z] << 1);                         // Stand low
-    loc.bits |= (keystatus[KEY_PLUS] << 4);                      // Zoom in
-    loc.bits |= (keystatus[KEY_MINUS] << 5);                     // Zoom out
-    loc.bits |= (keystatus[KEY_L_SHIFT] << 8);                   // Run
-    loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
-    loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
+    loc.bits |= keystatus[KEY_Q];              // Stand high
+    loc.bits |= (keystatus[KEY_Z] << 1);       // Stand low
+    loc.bits |= (keystatus[KEY_PLUS] << 4);    // Zoom in
+    loc.bits |= (keystatus[KEY_MINUS] << 5);   // Zoom out
+    loc.bits |= (keystatus[KEY_L_SHIFT] << 8); // Run
+    // loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
+    // loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
+    loc.bits |= ((last_ah + loc.ahvel > 16) << 2);               // Look up
+    loc.bits |= ((last_ah + loc.ahvel < -16) << 3);              // Look down
     loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);             // Space (Use Key)
     loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);            // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
@@ -6506,13 +6557,13 @@ void faketimerhandler(void)
             loc2.svel = min(max(svel2, -128 + 8), 127 - 8);
             loc2.avel = min(max(avel2, -128 + 16), 127 - 16);
             loc2.bits = (locselectedgun2 << 13);
-            loc2.bits |= keystatus[0x45];         // Stand high
-            loc2.bits |= (keystatus[0x47] << 1);  // Stand low
-            loc2.bits |= (1 << 8);                // Run
-            loc2.bits |= (keystatus[0x49] << 2);  // Look up
-            loc2.bits |= (keystatus[0x37] << 3);  // Look down
-            loc2.bits |= (keystatus[0x50] << 10); // Space
-            loc2.bits |= (keystatus[0x52] << 11); // Shoot
+            loc2.bits |= keystatus[KEY_NUMLOCK];            // Stand high
+            loc2.bits |= (keystatus[KEY_KP7_HOME] << 1);    // Stand low
+            loc2.bits |= (1 << 8);                          // Run
+            loc2.bits |= (keystatus[KEY_KP9_PG_UP] << 2);   // Look up
+            loc2.bits |= (keystatus[KEY_KP_TIMES] << 3);    // Look down
+            loc2.bits |= (keystatus[KEY_KP2_DOWN] << 10);   // Space
+            loc2.bits |= (keystatus[KEY_KP0_INSERT] << 11); // Shoot
 
             other = connectpoint2[myconnectindex];
             if (other < 0)
@@ -6662,7 +6713,7 @@ void getpackets(void)
 
             break;
         case 255: //[255] (logout)
-            keystatus[1] = 1;
+            keystatus[KEY_ESCAPE] = 1;
             break;
         }
     }
@@ -7082,7 +7133,7 @@ void waitforeverybody()
         }
         nextpage();
 
-        if (quitevent || keystatus[1])
+        if (quitevent || keystatus[KEY_ESCAPE])
         {
             sendlogoff(); // Signing off
             musicoff();
