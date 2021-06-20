@@ -3688,11 +3688,13 @@ void processinput(short snum)
             xvect += ((((int)ssync[snum].svel) * doubvel * (int)sintable[ang[snum] & 2047]) >> 3);
             yvect += ((((int)ssync[snum].svel) * doubvel * (int)sintable[(ang[snum] + 1536) & 2047]) >> 3);
         }
+
+        // Double flying speed
         if (flytime[snum] > lockclock)
         {
             xvect += xvect;
             yvect += yvect;
-        } // Double flying speed
+        }
         clipmove(&posx[snum], &posy[snum], &posz[snum], &cursectnum[snum], xvect, yvect, 128L, 4 << 8, 4 << 8,
                  CLIPMASK0);
         revolvedoorstat[snum] = 1;
@@ -3717,10 +3719,10 @@ void processinput(short snum)
     if (ssync[snum].avel != 0) // ang += avel * constant
     {                          // ENGINE calculates avel for you
         doubvel = TICSPERFRAME;
-        if ((ssync[snum].bits & 256) > 0) // Lt. shift makes turn velocity 50% faster
-            doubvel += (TICSPERFRAME >> 1);
-
-        ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 4);
+        // if ((ssync[snum].bits & 256) > 0) // Lt. shift makes turn velocity 50% faster
+        //     doubvel += (TICSPERFRAME >> 1);
+        ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 2);
+        // ang[snum] += (((int)ssync[snum].avel) * doubvel);
         ang[snum] &= 2047;
     }
 
@@ -3783,14 +3785,10 @@ void processinput(short snum)
         }
     }
 
-    if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
-        horiz[snum] -= 4; //-
-    if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
-        horiz[snum] += 4; //+
-
     goalz = globloz - EYEHEIGHT;
-    if (sector[cursectnum[snum]].lotag == 4) // slime sector
-        if ((globlohit & 0xc000) != 49152)   // You're not on a sprite
+    // slime sector
+    if (sector[cursectnum[snum]].lotag == 4)
+        if ((globlohit & 0xc000) != 49152) // You're not on a sprite
         {
             goalz = globloz - (8 << 8);
             if (posz[snum] >= goalz - (2 << 8))
@@ -3809,12 +3807,21 @@ void processinput(short snum)
                 }
             }
         }
-    if (goalz < globhiz + (16 << 8)) // ceiling&floor too close
+    // ceiling&floor too close
+    if (goalz < globhiz + (16 << 8))
         goalz = ((globloz + globhiz) >> 1);
     // goalz += mousz;
+
+    // The player is alive
     if (health[snum] >= 0)
     {
-        if ((ssync[snum].bits & 1) > 0) // A (stand high)
+        // Looking up and down
+        if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
+            horiz[snum] -= TICSPERFRAME; //-
+        if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
+            horiz[snum] += TICSPERFRAME; //+
+
+        if ((ssync[snum].bits & 1) > 0) // A (stand high - Jump)
         {
             if (flytime[snum] <= lockclock)
             {
@@ -3832,7 +3839,7 @@ void processinput(short snum)
                     hvel[snum] -= 192;
             }
         }
-        if ((ssync[snum].bits & 2) > 0) // Z (stand low)
+        if ((ssync[snum].bits & 2) > 0) // Z (stand low - Crouch)
         {
             if (flytime[snum] <= lockclock)
             {
@@ -3881,6 +3888,7 @@ void processinput(short snum)
     setsprite(playersprite[snum], posx[snum], posy[snum], posz[snum] + EYEHEIGHT);
     sprite[playersprite[snum]].ang = ang[snum];
 
+    // Player alive
     if (health[snum] >= 0)
     {
         if ((cursectnum[snum] < 0) || (cursectnum[snum] >= numsectors))
@@ -3907,7 +3915,8 @@ void processinput(short snum)
             waterfountainwall[snum] = -1;
         }
 
-    if ((ssync[snum].bits & 1024) > 0) // Space bar (use key)
+    // Space bar (use key)
+    if ((ssync[snum].bits & 1024) > 0)
     {
         // Continuous triggers...
 
@@ -3989,8 +3998,9 @@ void processinput(short snum)
 
             if (neartagsprite >= 0)
             {
+                // if you're shoving innocent little AL around, he gets mad!
                 if (sprite[neartagsprite].lotag == 1)
-                { // if you're shoving innocent little AL around, he gets mad!
+                {
                     if (sprite[neartagsprite].picnum == AL)
                     {
                         sprite[neartagsprite].picnum = EVILAL;
@@ -4034,8 +4044,9 @@ void processinput(short snum)
         }
     }
 
+    // Shoot a bullet
     if ((ssync[snum].bits & 2048) > 0)
-    { // Shoot a bullet
+    {
         if ((numbombs[snum] == 0) && (((ssync[snum].bits >> 13) & 7) == 2) && (myconnectindex == snum))
             locselectedgun = 0;
         if ((nummissiles[snum] == 0) && (((ssync[snum].bits >> 13) & 7) == 3) && (myconnectindex == snum))
@@ -5343,8 +5354,8 @@ void getinput(void)
     loc.bits |= (keystatus[KEY_L_SHIFT] << 8); // Run
     // loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
     // loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
-    loc.bits |= ((last_ah + loc.ahvel > 16) << 2);               // Look up
-    loc.bits |= ((last_ah + loc.ahvel < -16) << 3);              // Look down
+    loc.bits |= ((last_ah + loc.ahvel > 1) << 2);                // Look up
+    loc.bits |= ((last_ah + loc.ahvel < -1) << 3);               // Look down
     loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);             // Space (Use Key)
     loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);            // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
