@@ -617,6 +617,7 @@ static void polymost_loadshaders(void)
 
 	shader[0] = polymost_load_shader(GL_VERTEX_SHADER, default_polymost_vs_glsl, "polymost_vs.glsl");
 	shader[1] = polymost_load_shader(GL_FRAGMENT_SHADER, default_polymost_fs_glsl, "polymost_fs.glsl");
+	
 	if (shader[0] && shader[1]) {
 		polymostglsl.program = glbuild_link_program(2, shader);
 	}
@@ -637,9 +638,9 @@ static void polymost_loadshaders(void)
 
 #if (USE_OPENGL == USE_GL3)
 		glfunc.glGenVertexArrays(1, &polymostglsl.vao);
-        glfunc.glBindVertexArray(polymostglsl.vao);
-        glfunc.glEnableVertexAttribArray(polymostglsl.attrib_vertex);
-        glfunc.glEnableVertexAttribArray(polymostglsl.attrib_texcoord);
+		glfunc.glBindVertexArray(polymostglsl.vao);
+		glfunc.glEnableVertexAttribArray(polymostglsl.attrib_vertex);
+		glfunc.glEnableVertexAttribArray(polymostglsl.attrib_texcoord);
 #endif
 
 		glfunc.glUseProgram(polymostglsl.program);
@@ -668,6 +669,7 @@ static void polymost_loadshaders(void)
 
 	shader[0] = polymost_load_shader(GL_VERTEX_SHADER, default_polymostaux_vs_glsl, "polymostaux_vs.glsl");
 	shader[1] = polymost_load_shader(GL_FRAGMENT_SHADER, default_polymostaux_fs_glsl, "polymostaux_fs.glsl");
+
 	if (shader[0] && shader[1]) {
 		polymostauxglsl.program = glbuild_link_program(2, shader);
 	}
@@ -685,9 +687,9 @@ static void polymost_loadshaders(void)
 
 #if (USE_OPENGL == USE_GL3)
 		glfunc.glGenVertexArrays(1, &polymostauxglsl.vao);
-        glfunc.glBindVertexArray(polymostauxglsl.vao);
-        glfunc.glEnableVertexAttribArray(polymostauxglsl.attrib_vertex);
-        glfunc.glEnableVertexAttribArray(polymostauxglsl.attrib_texcoord);
+    glfunc.glBindVertexArray(polymostauxglsl.vao);
+    glfunc.glEnableVertexAttribArray(polymostauxglsl.attrib_vertex);
+    glfunc.glEnableVertexAttribArray(polymostauxglsl.attrib_texcoord);
 #endif
 
 		glfunc.glUseProgram(polymostauxglsl.program);
