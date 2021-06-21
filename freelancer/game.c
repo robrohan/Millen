@@ -3721,8 +3721,7 @@ void processinput(short snum)
         doubvel = TICSPERFRAME;
         // if ((ssync[snum].bits & 256) > 0) // Lt. shift makes turn velocity 50% faster
         //     doubvel += (TICSPERFRAME >> 1);
-        ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 2);
-        // ang[snum] += (((int)ssync[snum].avel) * doubvel);
+        ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 4);
         ang[snum] &= 2047;
     }
 
