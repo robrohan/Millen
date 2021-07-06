@@ -53,7 +53,7 @@ extern int cachesize, artsize;
 
 static short oldmousebstatus = 0;
 short brightness = 0;
-int zlock = 0x7fffffff, zmode = 0, whitecol, blackcol, kensplayerheight = 32;
+int zlock = 0x7fffffff, zmode = 0, whitecol, blackcol, kensplayerheight = 48;
 short defaultspritecstat = 0;
 
 static short localartfreq[MAXTILES];

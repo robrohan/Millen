@@ -3718,7 +3718,7 @@ void processinput(short snum)
 
     if (ssync[snum].avel != 0) // ang += avel * constant
     {                          // ENGINE calculates avel for you
-        doubvel = TICSPERFRAME;
+        doubvel = TICSPERFRAME + (TICSPERFRAME >> 1);
         // if ((ssync[snum].bits & 256) > 0) // Lt. shift makes turn velocity 50% faster
         //     doubvel += (TICSPERFRAME >> 1);
         ang[snum] += ((((int)ssync[snum].avel) * doubvel) >> 4);
@@ -3815,10 +3815,10 @@ void processinput(short snum)
     if (health[snum] >= 0)
     {
         // Looking up and down
-        if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
-            horiz[snum] -= TICSPERFRAME; //-
-        if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
-            horiz[snum] += TICSPERFRAME; //+
+        // if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
+        //     horiz[snum] -= TICSPERFRAME + (TICSPERFRAME >> 1); //-
+        // if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
+        //     horiz[snum] += TICSPERFRAME + (TICSPERFRAME >> 1); //+
 
         if ((ssync[snum].bits & 1) > 0) // A (stand high - Jump)
         {
@@ -5353,8 +5353,8 @@ void getinput(void)
     loc.bits |= (keystatus[KEY_L_SHIFT] << 8); // Run
     // loc.bits |= (keystatus[KEY_PG_DOWN] << 2);                   // Look up
     // loc.bits |= (keystatus[KEY_PG_UP] << 3);                     // Look down
-    loc.bits |= ((last_ah + loc.ahvel > 1) << 2);                // Look up
-    loc.bits |= ((last_ah + loc.ahvel < -1) << 3);               // Look down
+    loc.bits |= ((last_ah + loc.ahvel > 0) << 2);                // Look up
+    loc.bits |= ((last_ah + loc.ahvel < 0) << 3);                // Look down
     loc.bits |= ((keystatus[KEY_SPACE] == 1) << 10);             // Space (Use Key)
     loc.bits |= ((keystatus[KEY_L_CTRL] == 1) << 11);            // Shoot
     loc.bits |= (((bstatus & 6) > (oldmousebstatus & 6)) << 10); // Space
