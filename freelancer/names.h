@@ -1,4 +1,4 @@
-//Be careful when changing this file - it is parsed by Editart and Build.
+// Be careful when changing this file - it is parsed by Editart and Build.
 #define SWITCH1ON 15
 #define SLIME 34
 #define BACKGROUND 37
@@ -24,7 +24,7 @@
 #define CANNON 101
 #define GUNONBOTTOM 102
 #define BOMBEMITTER 103
-#define EXPLOSION 105
+#define EXPLOSION 824
 #define SPLASH 106
 #define BROWNMONSTER 110
 #define SKELETON 113
