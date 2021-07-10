@@ -151,9 +151,6 @@ typedef struct
 {
 	// x, y, z position of the item
 	int x, y, z;
-	// picnum can be thought of as the class type
-	// of this sprite
-	short picnum;
 	/**
 	 *   bit 0: 1 = Blocking sprite (use with clipmove, getzrange)       "B"
 	 *   bit 1: 1 = transluscence, 0 = normal                            "T"
@@ -170,6 +167,9 @@ typedef struct
 	 *   bit 15: 1 = Invisible sprite, 0 = not invisible
 	 */
 	short cstat;
+	// picnum can be thought of as the class type
+	// of this sprite
+	short picnum;
 	signed char shade;
 	// pal is the pallet
 	unsigned char pal, clipdist, filler;
