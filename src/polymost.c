@@ -563,7 +563,7 @@ static GLuint polymost_load_shader(GLuint shadertype, const char *defaultsrc, co
 		fseek(shaderfh, 0, SEEK_SET);
 
 		fileshadersrc = (GLchar *)calloc(1, shadersrclen + 1);
-		fread(fileshadersrc, shadersrclen, 1, shaderfh);
+		(void)! fread(fileshadersrc, shadersrclen, 1, shaderfh);
 
 		fclose(shaderfh);
 		shaderfh = NULL;

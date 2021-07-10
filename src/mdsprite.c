@@ -588,13 +588,15 @@ static md2model *md2load (int fil, const char *filnam)
 	m->uvs = (md2uv_t *)calloc(m->numuv,sizeof(md2uv_t));
 	if (!m->uvs) { md2free(m); return(0); }
 	klseek(fil,head.ofsuv,SEEK_SET);
-	if (kread(fil,(char *)m->uvs,m->numuv*sizeof(md2uv_t)) != m->numuv*sizeof(md2uv_t))
+	// TODO: casting this and the tris to an unsigned int it probably ok, but with a large model
+	// I can imagine this getting wack.
+	if ((unsigned int)kread(fil,(char *)m->uvs, m->numuv*sizeof(md2uv_t)) != m->numuv*sizeof(md2uv_t))
 		{ md2free(m); return(0); }
 
 	m->tris = (md2tri_t *)calloc(m->numtris,sizeof(md2tri_t));
 	if (!m->tris) { md2free(m); return(0); }
 	klseek(fil,head.ofstris,SEEK_SET);
-	if (kread(fil,(char *)m->tris,m->numtris*sizeof(md2tri_t)) != m->numtris*sizeof(md2tri_t))
+	if ((unsigned int)kread(fil,(char *)m->tris,m->numtris*sizeof(md2tri_t)) != m->numtris*sizeof(md2tri_t))
 		{ md2free(m); return(0); }
 
 	m->frames = (char *)calloc(m->numframes,m->framebytes);

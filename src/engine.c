@@ -35,6 +35,9 @@
 #include <math.h>
 #include <assert.h>
 
+// TODO: these seem pretty dangerous
+#define UNUSED_RETURN (void)!
+
 void *kmalloc(bsize_t size) { return(Bmalloc(size)); }
 void kfree(void *buffer) { Bfree(buffer); }
 
@@ -7340,15 +7343,15 @@ int saveboard(char *filename, int *daposx, int *daposy, int *daposz,
 		mapversion = 8;
 	else
 		mapversion = 7;
-	tl = B_LITTLE32(mapversion);    Bwrite(fil,&tl,4);
+	tl = B_LITTLE32(mapversion);    UNUSED_RETURN Bwrite(fil,&tl,4);
 
-	tl = B_LITTLE32(*daposx);       Bwrite(fil,&tl,4);
-	tl = B_LITTLE32(*daposy);       Bwrite(fil,&tl,4);
-	tl = B_LITTLE32(*daposz);       Bwrite(fil,&tl,4);
-	ts = B_LITTLE16(*daang);        Bwrite(fil,&ts,2);
-	ts = B_LITTLE16(*dacursectnum); Bwrite(fil,&ts,2);
+	tl = B_LITTLE32(*daposx);       UNUSED_RETURN Bwrite(fil,&tl,4);
+	tl = B_LITTLE32(*daposy);       UNUSED_RETURN Bwrite(fil,&tl,4);
+	tl = B_LITTLE32(*daposz);       UNUSED_RETURN Bwrite(fil,&tl,4);
+	ts = B_LITTLE16(*daang);        UNUSED_RETURN Bwrite(fil,&ts,2);
+	ts = B_LITTLE16(*dacursectnum); UNUSED_RETURN Bwrite(fil,&ts,2);
 
-	ts = B_LITTLE16(numsectors);    Bwrite(fil,&ts,2);
+	ts = B_LITTLE16(numsectors);    UNUSED_RETURN Bwrite(fil,&ts,2);
 	for (i=0; i<numsectors; i++) {
 		tsect = sector[i];
 		tsect.wallptr       = B_LITTLE16(tsect.wallptr);
@@ -7364,10 +7367,10 @@ int saveboard(char *filename, int *daposx, int *daposy, int *daposz,
 		tsect.lotag         = B_LITTLE16(tsect.lotag);
 		tsect.hitag         = B_LITTLE16(tsect.hitag);
 		tsect.extra         = B_LITTLE16(tsect.extra);
-		Bwrite(fil,&tsect,sizeof(sectortype));
+		UNUSED_RETURN Bwrite(fil,&tsect,sizeof(sectortype));
 	}
 
-	ts = B_LITTLE16(numwalls);      Bwrite(fil,&ts,2);
+	ts = B_LITTLE16(numwalls);      UNUSED_RETURN Bwrite(fil,&ts,2);
 	for (i=0; i<numwalls; i++) {
 		twall = wall[i];
 		twall.x          = B_LITTLE32(twall.x);
@@ -7381,10 +7384,10 @@ int saveboard(char *filename, int *daposx, int *daposy, int *daposz,
 		twall.lotag      = B_LITTLE16(twall.lotag);
 		twall.hitag      = B_LITTLE16(twall.hitag);
 		twall.extra      = B_LITTLE16(twall.extra);
-		Bwrite(fil,&twall,sizeof(walltype));
+		UNUSED_RETURN Bwrite(fil,&twall,sizeof(walltype));
 	}
 
-	ts = B_LITTLE16(numsprites);    Bwrite(fil,&ts,2);
+	ts = B_LITTLE16(numsprites);    UNUSED_RETURN Bwrite(fil,&ts,2);
 
 	for(j=0;j<MAXSTATUS;j++)
 	{
@@ -7407,7 +7410,7 @@ int saveboard(char *filename, int *daposx, int *daposy, int *daposz,
 			tspri.lotag   = B_LITTLE16(tspri.lotag);
 			tspri.hitag   = B_LITTLE16(tspri.hitag);
 			tspri.extra   = B_LITTLE16(tspri.extra);
-			Bwrite(fil,&tspri,sizeof(spritetype));
+			UNUSED_RETURN Bwrite(fil,&tspri,sizeof(spritetype));
 			i = nextspritestat[i];
 		}
 	}

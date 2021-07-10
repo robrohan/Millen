@@ -1394,11 +1394,11 @@ int handleevents(void) {
       break;
 
     case SDL_KEYUP:
-      // (un)grab mouse with ctrl-g
-      if (ev.key.keysym.sym == SDLK_g && (ev.key.keysym.mod & KMOD_CTRL)) {
-        grabmouse(!mouseacquired);
-        break;
-      }
+      // // (un)grab mouse with ctrl-g
+      // if (ev.key.keysym.sym == SDLK_g && (ev.key.keysym.mod & KMOD_CTRL)) {
+      //   grabmouse(!mouseacquired);
+      //   break;
+      // }
       // else: fallthrough
     case SDL_KEYDOWN:
       code = keytranslation[ev.key.keysym.scancode].normal;
