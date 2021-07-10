@@ -1,13 +1,13 @@
 #glbuild(ES2) #version 100
-#glbuild(2)   #version 110
-#glbuild(3)   #version 140
+#glbuild(2) #version 110
+#glbuild(3) #version 140
 
 #ifdef GL_ES
 #elif __VERSION__ < 140
-#  define mediump
+#define mediump
 #else
-#  define attribute in
-#  define varying out
+#define attribute in
+#define varying out
 #endif
 
 attribute vec3 a_vertex;
@@ -17,8 +17,7 @@ varying mediump vec2 v_texcoord;
 uniform mat4 u_modelview;
 uniform mat4 u_projection;
 
-void main(void)
-{
-    v_texcoord = a_texcoord;
-    gl_Position = u_projection * u_modelview * vec4(a_vertex, 1.0);
+void main(void) {
+  v_texcoord = a_texcoord;
+  gl_Position = u_projection * u_modelview * vec4(a_vertex, 1.0);
 }
