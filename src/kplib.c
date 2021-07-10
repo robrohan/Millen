@@ -95,6 +95,9 @@ static __inline int filelength (int h)
 #define _inline inline
 #endif
 
+// TODO: these seem pretty dangerous
+#define UNUSED_RETURN (void)!
+
 static int bytesperline, xres, yres, globxoffs, globyoffs;
 static INT_PTR frameplace;
 
@@ -437,7 +440,7 @@ static void suckbitsnextblock ()
 			//NOTE: should only read bytes inside compsize, not 64K!!! :/
 		*(int *)&olinbuf[0] = *(int *)&olinbuf[sizeof(olinbuf)-4];
 		n = min((unsigned)(kzfs.compleng-kzfs.comptell),sizeof(olinbuf)-4);
-		fread(&olinbuf[4],n,1,kzfs.fil);
+		UNUSED_RETURN fread(&olinbuf[4],n,1,kzfs.fil);
 		kzfs.comptell += n;
 		bitpos -= ((sizeof(olinbuf)-4)<<3);
 	}
@@ -1461,7 +1464,9 @@ static void invdct8x8 (int *dc, unsigned char dcflag)
 
 static void yrbrend (int x, int y)
 {
-	int i, j, ox, oy, xx, yy, xxx, yyy, xxxend, yyyend, yv, cr, cb, *odc, *dc, *dc2;
+	int i, j, ox, oy, xx, yy, xxx, yyy, xxxend, yyyend, yv, *odc, *dc, *dc2;
+	int cb = 0;
+	int cr = 0;
 	INT_PTR p, pp;
 
 	odc = dct[0]; dc2 = dct[10];
@@ -1553,13 +1558,23 @@ static int kpegrend (const char *kfilebuf, int kfilength,
 	INT_PTR daframeplace, int dabytesperline, int daxres, int dayres,
 	int daglobxoffs, int daglobyoffs)
 {
-	int i, j, p, v, leng, xdim, ydim, index, prec, restartcnt, restartinterval;
-	int x, y, z, xx, yy, zz, *dc, *dc2, num, curbits, c, daval, dabits, *hqval, *hqbits, hqcnt, *quanptr;
-	int passcnt = 0, ghsampmax, gvsampmax, glhsampmax, glvsampmax, glhstep, glvstep;
+	int i, j, p, v, leng, index, prec, restartcnt, restartinterval;
+	int x, y, z, xx, yy, zz, *dc2, num, curbits, c, daval, dabits, *hqval, *hqbits, hqcnt, *quanptr;
+	int passcnt = 0, glhstep, glvstep;
 	int eobrun, Ss, Se, Ah, Al, Alut[2], dctx[12], dcty[12], ldctx[12], ldcty[12], lshx[4], lshy[4];
-	short *dctbuf = 0, *dctptr[12], *ldctptr[12], *dcs;
+	short *dctbuf = 0, *dctptr[12], *ldctptr[12];
 	unsigned char ch, marker, dcflag;
 	const unsigned char *kfileptr;
+
+	int ghsampmax = 0;
+	int gvsampmax = 0;
+	int glhsampmax = 0;
+	int glvsampmax = 0;
+	int xdim = 0;
+	int ydim = 0;
+
+	short *dcs = NULL;
+	int *dc = NULL;
 
 	if (!kpeginited) { kpeginited = 1; initkpeg(); }
 
@@ -1956,9 +1971,10 @@ static int kgifrend (const char *kfilebuf, int kfilelength,
 {
 	int i, x, y, xsiz, ysiz, yinc, xend, xspan, yspan, currstr, numbitgoal;
 	int lzcols, dat, blocklen, bitcnt, xoff, yoff, transcol, backcol, *lptr;
-	INT_PTR p;
+	INT_PTR p = 0;
 	unsigned char numbits, startnumbits, chunkind, ilacefirst;
-	const unsigned char *ptr, *cptr;
+	const unsigned char *ptr;
+	const unsigned char *cptr = NULL;
 
 	coltype = 3; bitdepth = 8; //For PNGOUT
 
@@ -2138,7 +2154,8 @@ static int ktgarend (const char *header, int fleng,
 {
 	int i, x, y, pi, xi, yi, x0, x1, y0, y1, xsiz, ysiz, rlestat, colbyte, pixbyte;
 	INT_PTR p;
-	const unsigned char *fptr, *cptr, *nptr;
+	const unsigned char *fptr, *nptr;
+	const unsigned char *cptr = NULL;
 
 		//Ugly and unreliable identification for .TGA!
 	if ((fleng < 20) || (header[1]&0xfe)) return(-1);
@@ -2161,7 +2178,11 @@ static int ktgarend (const char *header, int fleng,
 	switch(pixbyte) //For PNGOUT
 	{
 		case 1: coltype = 0; bitdepth = 8; palcol[0] = LSWAPIB(0xff000000);
-				  for(i=1;i<256;i++) palcol[i] = palcol[i-1]+LSWAPIB(0x10101); break;
+			for(i=1;i<256;i++) 
+			{
+				palcol[i] = palcol[i-1]+LSWAPIB(0x10101); 
+			}
+			break;
 		case 2: case 3: coltype = 2; break;
 		case 4: coltype = 6; break;
 	}
@@ -2210,23 +2231,23 @@ static int ktgarend (const char *header, int fleng,
 //==============================  TARGA ends =================================
 //==============================  BMP begins =================================
 	//TODO: handle BI_RLE8 and BI_RLE4 (compression types 1&2 respectively)
-	//                        ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//                        ³  0(2): "BM"   ³
-	// ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³ 10(4): rastoff³ ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	// ³headsiz=12 (OS/2 1.x)³³ 14(4): headsiz³ ³ All new formats: ³
-	//ÚÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÁÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÁÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
-	//³ 18(2): xsiz                         ³ 18(4): xsiz                                  ³
-	//³ 20(2): ysiz                         ³ 22(4): ysiz                                  ³
-	//³ 22(2): planes (always 1)            ³ 26(2): planes (always 1)                     ³
-	//³ 24(2): cdim (1,4,8,24)              ³ 28(2): cdim (1,4,8,16,24,32)                 ³
-	//³ if (cdim < 16)                      ³ 30(4): compression (0,1,2,3!?,4)             ³
-	//³    26(rastoff-14-headsiz): pal(bgr) ³ 34(4): (bitmap data size+3)&3                ³
-	//³                                     ³ 46(4): N colors (0=2^cdim)                   ³
-	//³                                     ³ if (cdim < 16)                               ³
-	//³                                     ³    14+headsiz(rastoff-14-headsiz): pal(bgr0) ³
-	//ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
-	//                      ³ rastoff(?): bitmap data ³
-	//                      ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+	//                        ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+	//                        ï¿½  0(2): "BM"   ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿ï¿½ 10(4): rastoffï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+	// ï¿½headsiz=12 (OS/2 1.x)ï¿½ï¿½ 14(4): headsizï¿½ ï¿½ All new formats: ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä¿
+	//ï¿½ 18(2): xsiz                         ï¿½ 18(4): xsiz                                  ï¿½
+	//ï¿½ 20(2): ysiz                         ï¿½ 22(4): ysiz                                  ï¿½
+	//ï¿½ 22(2): planes (always 1)            ï¿½ 26(2): planes (always 1)                     ï¿½
+	//ï¿½ 24(2): cdim (1,4,8,24)              ï¿½ 28(2): cdim (1,4,8,16,24,32)                 ï¿½
+	//ï¿½ if (cdim < 16)                      ï¿½ 30(4): compression (0,1,2,3!?,4)             ï¿½
+	//ï¿½    26(rastoff-14-headsiz): pal(bgr) ï¿½ 34(4): (bitmap data size+3)&3                ï¿½
+	//ï¿½                                     ï¿½ 46(4): N colors (0=2^cdim)                   ï¿½
+	//ï¿½                                     ï¿½ if (cdim < 16)                               ï¿½
+	//ï¿½                                     ï¿½    14+headsiz(rastoff-14-headsiz): pal(bgr0) ï¿½
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	//                      ï¿½ rastoff(?): bitmap data ï¿½
+	//                      ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 static int kbmprend (const char *buf, int fleng,
 	INT_PTR daframeplace, int dabytesperline, int daxres, int dayres,
 	int daglobxoffs, int daglobyoffs)
@@ -2797,7 +2818,7 @@ int kzaddstack (const char *zipnam)
 	zipnamoffs = kzhashpos; kzhashpos += i;
 
 	fseek(fil,-22,SEEK_END);
-	fread(tempbuf,22,1,fil);
+	UNUSED_RETURN fread(tempbuf,22,1,fil);
 	if (*(unsigned int *)&tempbuf[0] == LSWAPIB(0x06054b50)) //Fast way of finding dir info
 	{
 		numfiles = SSWAPIB(*(short *)&tempbuf[10]);
@@ -2811,7 +2832,7 @@ int kzaddstack (const char *zipnam)
 			if (!fread(&j,4,1,fil)) { numfiles = -1; break; }
 			if ((unsigned)j == LSWAPIB(0x02014b50)) break; //Found central file header :)
 			if ((unsigned)j != LSWAPIB(0x04034b50)) { numfiles = -1; break; }
-			fread(tempbuf,26,1,fil);
+			UNUSED_RETURN fread(tempbuf,26,1,fil);
 			fseek(fil,LSWAPIB(*(int *)&tempbuf[14]) + SSWAPIB(*(short *)&tempbuf[24]) + SSWAPIB(*(short *)&tempbuf[22]),SEEK_CUR);
 			numfiles++;
 		}
@@ -2820,11 +2841,11 @@ int kzaddstack (const char *zipnam)
 	}
 	for(i=0;i<numfiles;i++)
 	{
-		fread(tempbuf,46,1,fil);
+		UNUSED_RETURN fread(tempbuf,46,1,fil);
 		if (*(int *)&tempbuf[0] != LSWAPIB(0x02014b50)) { fclose(fil); return(0); }
 
 		j = SSWAPIB(*(short *)&tempbuf[28]); //filename length
-		fread(&tempbuf[46],j,1,fil);
+		UNUSED_RETURN fread(&tempbuf[46],j,1,fil);
 		tempbuf[j+46] = 0;
 
 			//Write information into hash
@@ -2869,7 +2890,7 @@ int kzopen (const char *filnam)
 	{
 		fil = fopen(zipnam,"rb"); if (!fil) return(0);
 		fseek(fil,zipseek,SEEK_SET);
-		fread(tempbuf,30,1,fil);
+		UNUSED_RETURN fread(tempbuf,30,1,fil);
 		if (*(int *)&tempbuf[0] != LSWAPIB(0x04034b50)) { fclose(fil); return(0); }
 		fseek(fil,SSWAPIB(*(short *)&tempbuf[26])+SSWAPIB(*(short *)&tempbuf[28]),SEEK_CUR);
 
@@ -3063,7 +3084,7 @@ int kzread (void *buffer, int leng)
 		if (kzfs.pos != kzfs.i) //Seek only when position changes
 			fseek(kzfs.fil,kzfs.seek0+kzfs.pos,SEEK_SET);
 		i = min(kzfs.leng-kzfs.pos,leng);
-		fread(buffer,i,1,kzfs.fil);
+		UNUSED_RETURN fread(buffer,i,1,kzfs.fil);
 		kzfs.i += i; //kzfs.i is a local copy of ftell(kzfs.fil);
 	}
 	else if (kzfs.comptyp == 8)
@@ -3084,7 +3105,7 @@ int kzread (void *buffer, int leng)
 
 				//Initialize for suckbits/peekbits/getbits
 			kzfs.comptell = min((unsigned)kzfs.compleng,sizeof(olinbuf));
-			fread(&olinbuf[0],kzfs.comptell,1,kzfs.fil);
+			UNUSED_RETURN fread(&olinbuf[0],kzfs.comptell,1,kzfs.fil);
 				//Make it re-load when there are < 32 bits left in FIFO
 			bitpos = -(((int)sizeof(olinbuf)-4)<<3);
 				//Identity: filptr + (bitpos>>3) = &olinbuf[0]

@@ -14,6 +14,9 @@
 #ifdef WITHKPLIB
 #include "kplib.h"
 
+// TODO: these seem pretty dangerous
+#define UNUSED_RETURN (void)!
+
 	//Insert '|' in front of filename
 	//Doing this tells kzopen to load the file only if inside a .ZIP file
 static int kzipopen(const char *filnam)
@@ -445,7 +448,7 @@ int initgroupfile(const char *filename)
 	i = Bopen(zfn,BO_BINARY|BO_RDONLY,BS_IREAD);
 	if (i < 0) { free(zfn); return -1; }
 
-	Bread(i, buf, 4);
+	UNUSED_RETURN Bread(i, buf, 4);
 	if (buf[0] == 0x50 && buf[1] == 0x4B && buf[2] == 0x03 && buf[3] == 0x04) {
 		Bclose(i);
 		j = kzaddstack(zfn);
@@ -464,7 +467,7 @@ int initgroupfile(const char *filename)
 #endif
 	{
 		groupfilpos[numgroupfiles] = 0;
-		Bread(groupfil[numgroupfiles],buf,16);
+		UNUSED_RETURN Bread(groupfil[numgroupfiles],buf,16);
 		if ((buf[0] != 'K') || (buf[1] != 'e') || (buf[2] != 'n') ||
 			 (buf[3] != 'S') || (buf[4] != 'i') || (buf[5] != 'l') ||
 			 (buf[6] != 'v') || (buf[7] != 'e') || (buf[8] != 'r') ||
@@ -481,7 +484,7 @@ int initgroupfile(const char *filename)
 		if ((gfileoffs[numgroupfiles] = (int *)kmalloc((gnumfiles[numgroupfiles]+1)<<2)) == 0)
 			{ buildprintf("Not enough memory for file grouping system\n"); exit(0); }
 
-		Bread(groupfil[numgroupfiles],gfilelist[numgroupfiles],gnumfiles[numgroupfiles]<<4);
+		UNUSED_RETURN Bread(groupfil[numgroupfiles],gfilelist[numgroupfiles],gnumfiles[numgroupfiles]<<4);
 
 		j = 0;
 		for(i=0;i<gnumfiles[numgroupfiles];i++)
@@ -1150,7 +1153,8 @@ void kdfwrite(void *buffer, bsize_t dasizeof, bsize_t count, int fil)
 	if (k > LZWSIZE-dasizeof)
 	{
 		leng = (short)lzwcompress(lzwbuf4,k,lzwbuf5); k = 0; swleng = B_LITTLE16(leng);
-		Bwrite(fil,&swleng,2); Bwrite(fil,lzwbuf5,(int)leng);
+		UNUSED_RETURN Bwrite(fil,&swleng,2); 
+		UNUSED_RETURN Bwrite(fil,lzwbuf5,(int)leng);
 	}
 	
 	for(i=1;i<count;i++)
@@ -1160,14 +1164,16 @@ void kdfwrite(void *buffer, bsize_t dasizeof, bsize_t count, int fil)
 		if (k > LZWSIZE-dasizeof)
 		{
 			leng = (short)lzwcompress(lzwbuf4,k,lzwbuf5); k = 0; swleng = B_LITTLE16(leng);
-			Bwrite(fil,&swleng,2); Bwrite(fil,lzwbuf5,(int)leng);
+			UNUSED_RETURN Bwrite(fil,&swleng,2); 
+			UNUSED_RETURN Bwrite(fil,lzwbuf5,(int)leng);
 		}
 		ptr += dasizeof;
 	}
 	if (k > 0)
 	{
 		leng = (short)lzwcompress(lzwbuf4,k,lzwbuf5); swleng = B_LITTLE16(leng);
-		Bwrite(fil,&swleng,2); Bwrite(fil,lzwbuf5,(int)leng);
+		UNUSED_RETURN Bwrite(fil,&swleng,2); 
+		UNUSED_RETURN Bwrite(fil,lzwbuf5,(int)leng);
 	}
 	lzwbuflock[0] = lzwbuflock[1] = lzwbuflock[2] = lzwbuflock[3] = lzwbuflock[4] = 1;
 }

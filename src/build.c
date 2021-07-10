@@ -6346,7 +6346,11 @@ int menuselect(int newpathmode)
 		}
 		printext16(halfxdim16-(8*strlen(buffer)/2), 4, 14,0,buffer,0);
 
-		Bsnprintf(buffer,78,"(%d dirs, %d files) %s",numdirs,numfiles,selectedboardfilename);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation" 
+		Bsnprintf(buffer,78,"(%d dirs, %d files) %s", numdirs, numfiles, selectedboardfilename);
+#pragma GCC diagnostic pop
+
 		buffer[sizeof(buffer)-1] = 0;
 		printext16(1,ydim16-8-1,8,0,buffer,0);
 
