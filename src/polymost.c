@@ -160,6 +160,7 @@ static struct {
 	GLint uniform_colour;		// Colour (vec4)
 	GLint uniform_fogcolour;    // Fog colour   (vec4)
 	GLint uniform_fogdensity;   // Fog density  (float)
+	GLint uniform_time; // Time for animations and such
 } polymostglsl;
 
 static struct {
@@ -635,6 +636,7 @@ static void polymost_loadshaders(void)
 		polymostglsl.uniform_colour      = polymost_get_uniform(polymostglsl.program, "u_colour");
 		polymostglsl.uniform_fogcolour   = polymost_get_uniform(polymostglsl.program, "u_fogcolour");
 		polymostglsl.uniform_fogdensity  = polymost_get_uniform(polymostglsl.program, "u_fogdensity");
+		polymostglsl.uniform_time        = polymost_get_uniform(polymostglsl.program, "u_time");
 
 #if (USE_OPENGL == USE_GL3)
 		glfunc.glGenVertexArrays(1, &polymostglsl.vao);
@@ -3017,6 +3019,9 @@ void polymost_drawrooms ()
 #else
 		glfunc.glDepthRange(0.00001,1.0); //<- this is more widely supported than glPolygonOffset
 #endif
+
+		// Not sure this is the best place for this.
+		glfunc.glUniform1f(polymostglsl.uniform_time, SDL_GetTicks() * .001);
 
 		 //Enable this for OpenGL red-blue glasses mode :)
 		if (glredbluemode)

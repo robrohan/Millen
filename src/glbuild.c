@@ -383,7 +383,7 @@ int glbuild_prepare_8bit_shader(glbuild8bit *state, int resx, int resy, int stri
 	glfunc.glVertexAttribPointer(state->attrib_texcoord, 2, GL_FLOAT, GL_FALSE,
 		sizeof(GLfloat)*4, (const GLvoid *)0);
 
-    glfunc.glEnableVertexAttribArray(state->attrib_vertex);
+	glfunc.glEnableVertexAttribArray(state->attrib_vertex);
 	glfunc.glVertexAttribPointer(state->attrib_vertex, 2, GL_FLOAT, GL_FALSE,
 		sizeof(GLfloat)*4, (const GLvoid *)(sizeof(GLfloat)*2));
 

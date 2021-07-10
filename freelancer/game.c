@@ -4816,22 +4816,22 @@ void drawscreen(short snum, int dasmoothratio)
     while (totalclock >= ototalclock + (TIMERINTSPERSECOND / MOVESPERSECOND))
         faketimerhandler();
 
-    if (keystatus[0x3f]) // F5
+    if (keystatus[KEY_F5]) // F5
     {
-        keystatus[0x3f] = 0;
+        keystatus[KEY_F5] = 0;
         detailmode ^= 1;
         // setrendermode(3);
     }
-    if (keystatus[0x58]) // F12
+    if (keystatus[KEY_F12]) // F12
     {
-        keystatus[0x58] = 0;
-        screencapture("captxxxx.tga", keystatus[0x2a] | keystatus[0x36]);
+        keystatus[KEY_F12] = 0;
+        screencapture("captxxxx.tga", keystatus[KEY_L_SHIFT] | keystatus[KEY_R_SHIFT]);
     }
-    if (keystatus[0x3e]) // F4 - screen re-size
+    if (keystatus[KEY_F4]) // F4 - screen re-size
     {
-        keystatus[0x3e] = 0;
+        keystatus[KEY_F4] = 0;
 
-        if (keystatus[0x2a] | keystatus[0x36])
+        if (keystatus[KEY_L_SHIFT] | keystatus[KEY_R_SHIFT])
         {
             setgamemode(!fullscreen, xdim, ydim, bpp);
         }
@@ -4870,9 +4870,9 @@ void drawscreen(short snum, int dasmoothratio)
         getmessageleng = Bstrlen((char *)getmessage);
         getmessagetimeoff = totalclock + 120 * 5;
     }
-    if (keystatus[0x57]) // F11 - brightness
+    if (keystatus[KEY_F11]) // F11 - brightness
     {
-        keystatus[0x57] = 0;
+        keystatus[KEY_F11] = 0;
         brightness++;
         if (brightness > 8)
             brightness = 0;
@@ -4881,9 +4881,9 @@ void drawscreen(short snum, int dasmoothratio)
 
     if (option[4] == 0) // Single player only keys
     {
-        if (keystatus[0xd2]) // Insert - Insert player
+        if (keystatus[KEY_INSERT]) // Insert - Insert player
         {
-            keystatus[0xd2] = 0;
+            keystatus[KEY_INSERT] = 0;
             if (numplayers < MAXPLAYERS)
             {
                 connectpoint2[numplayers - 1] = numplayers;
@@ -4898,9 +4898,9 @@ void drawscreen(short snum, int dasmoothratio)
                 numplayers++;
             }
         }
-        if (keystatus[0xd3]) // Delete - Delete player
+        if (keystatus[KEY_DELETE]) // Delete - Delete player
         {
-            keystatus[0xd3] = 0;
+            keystatus[KEY_DELETE] = 0;
             if (numplayers > 1)
             {
                 numplayers--;
@@ -4920,9 +4920,9 @@ void drawscreen(short snum, int dasmoothratio)
                     clearallviews(0L); // Clear screen to specified color
             }
         }
-        if (keystatus[0x46]) // Scroll Lock
+        if (keystatus[KEY_SCROLLLOCK]) // Scroll Lock
         {
-            keystatus[0x46] = 0;
+            keystatus[KEY_SCROLLLOCK] = 0;
 
             myconnectindex = connectpoint2[myconnectindex];
             if (myconnectindex < 0)

@@ -119,56 +119,70 @@ typedef struct
 	short lotag, hitag, extra;
 } sectortype;
 
-//cstat:
-//   bit 0: 1 = Blocking wall (use with clipmove, getzrange)         "B"
-//   bit 1: 1 = bottoms of invisible walls swapped, 0 = not          "2"
-//   bit 2: 1 = align picture on bottom (for doors), 0 = top         "O"
-//   bit 3: 1 = x-flipped, 0 = normal                                "F"
-//   bit 4: 1 = masking wall, 0 = not                                "M"
-//   bit 5: 1 = 1-way wall, 0 = not                                  "1"
-//   bit 6: 1 = Blocking wall (use with hitscan / cliptype 1)        "H"
-//   bit 7: 1 = Transluscence, 0 = not                               "T"
-//   bit 8: 1 = y-flipped, 0 = normal                                "F"
-//   bit 9: 1 = Transluscence reversing, 0 = normal                  "T"
-//   bits 10-15: reserved
+
 
 	//32 bytes
 typedef struct
 {
 	int x, y;
-	short point2, nextwall, nextsector, cstat;
+	short point2, nextwall, nextsector;
+	/**
+   *  bit 0: 1 = Blocking wall (use with clipmove, getzrange)         "B"
+   *  bit 1: 1 = bottoms of invisible walls swapped, 0 = not          "2"
+   *  bit 2: 1 = align picture on bottom (for doors), 0 = top         "O"
+   *  bit 3: 1 = x-flipped, 0 = normal                                "F"
+   *  bit 4: 1 = masking wall, 0 = not                                "M"
+   *  bit 5: 1 = 1-way wall, 0 = not                                  "1"
+   *  bit 6: 1 = Blocking wall (use with hitscan / cliptype 1)        "H"
+   *  bit 7: 1 = Transluscence, 0 = not                               "T"
+   *  bit 8: 1 = y-flipped, 0 = normal                                "F"
+   *  bit 9: 1 = Transluscence reversing, 0 = normal                  "T"
+   *  bits 10-15: reserved
+	 */
+	short cstat;
 	short picnum, overpicnum;
 	signed char shade;
 	unsigned char pal, xrepeat, yrepeat, xpanning, ypanning;
 	short lotag, hitag, extra;
 } walltype;
 
-//cstat:
-//   bit 0: 1 = Blocking sprite (use with clipmove, getzrange)       "B"
-//   bit 1: 1 = transluscence, 0 = normal                            "T"
-//   bit 2: 1 = x-flipped, 0 = normal                                "F"
-//   bit 3: 1 = y-flipped, 0 = normal                                "F"
-//   bits 5-4: 00 = FACE sprite (default)                            "R"
-//             01 = WALL sprite (like masked walls)
-//             10 = FLOOR sprite (parallel to ceilings&floors)
-//   bit 6: 1 = 1-sided sprite, 0 = normal                           "1"
-//   bit 7: 1 = Real centered centering, 0 = foot center             "C"
-//   bit 8: 1 = Blocking sprite (use with hitscan / cliptype 1)      "H"
-//   bit 9: 1 = Transluscence reversing, 0 = normal                  "T"
-//   bits 10-14: reserved
-//   bit 15: 1 = Invisible sprite, 0 = not invisible
-
 	//44 bytes
 typedef struct
 {
+	// x, y, z position of the item
 	int x, y, z;
-	short cstat, picnum;
+	// picnum can be thought of as the class type
+	// of this sprite
+	short picnum;
+	/**
+	 *   bit 0: 1 = Blocking sprite (use with clipmove, getzrange)       "B"
+	 *   bit 1: 1 = transluscence, 0 = normal                            "T"
+	 *   bit 2: 1 = x-flipped, 0 = normal                                "F"
+	 *   bit 3: 1 = y-flipped, 0 = normal                                "F"
+	 *   bits 5-4: --- 00 = FACE sprite (default)                            "R"
+	 *             --- 01 = WALL sprite (like masked walls)
+	 *             --- 10 = FLOOR sprite (parallel to ceilings&floors)
+	 *  bit 6: 1 = 1-sided sprite, 0 = normal                           "1"
+	 *   bit 7: 1 = Real centered centering, 0 = foot center             "C"
+	 *   bit 8: 1 = Blocking sprite (use with hitscan / cliptype 1)      "H"
+	 *   bit 9: 1 = Transluscence reversing, 0 = normal                  "T"
+	 *   bits 10-14: reserved
+	 *   bit 15: 1 = Invisible sprite, 0 = not invisible
+	 */
+	short cstat;
 	signed char shade;
+	// pal is the pallet
 	unsigned char pal, clipdist, filler;
+	// Texture x and y repeat values?
 	unsigned char xrepeat, yrepeat;
+	// x an y offset of the texture?
 	signed char xoffset, yoffset;
 	short sectnum, statnum;
+	// ang is angle 0 is from it inital start
+	// position, use sintable[angle &2047] in 
+	// degrees to rotate
 	short ang, owner, xvel, yvel, zvel;
+	// numbers set via the map editor
 	short lotag, hitag, extra;
 } spritetype;
 
