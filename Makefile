@@ -225,7 +225,9 @@ endif
 
 $(EDITORLIB): $(EDITOROBJS)
 	$(AR) rc $@ $^
+ifneq ($(PLATFORM),WASM)
 	$(RANLIB) $@
+endif
 
 $(GAMEDATA)/game$(EXESUFFIX): $(GAMEEXEOBJS)
 	$(CXX) $(CFLAGS) $(OURCFLAGS) -o $@ $^ $(GAMELIBS) $(LIBS)

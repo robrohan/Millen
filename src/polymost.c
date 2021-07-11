@@ -80,6 +80,7 @@ Low priority:
 # include "polymosttex_priv.h"
 # include "polymosttexcache.h"
 # include "mdsprite_priv.h"
+# include <SDL2/SDL.h>
 #endif
 extern char textfont[2048], smalltextfont[2048];
 
