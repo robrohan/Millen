@@ -1,0 +1,29 @@
+name: square_kenbuild
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  Build_Ubuntu:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install_Dependencies
+        run: |
+          sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
+          sudo apt-get update -y -qq
+          sudo apt-get install libsdl2-dev
+      - name: Build
+        run: |
+          make USE_POLYMOST=1 WITHOUT_GTK=1 USE_OPENGL=USE_GLES2 USE_ASM=0 GAME=freelancer GAMEDATA=freelancer-data
+
+#    - name: cppcheck
+#      uses: deep5050/cppcheck-action@master
+#      with:
+#        github_token: ${{ secrets.GITHUB_TOKEN}}
+#        enable: warning,style,performance,portability,information,unusedFunction
+#        force_language: c
