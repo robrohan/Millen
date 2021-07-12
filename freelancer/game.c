@@ -22,6 +22,10 @@
 #endif
 // clang-format on
 
+#include <lua/lauxlib.h>
+#include <lua/lua.h>
+#include <lua/lualib.h>
+
 #define TIMERINTSPERSECOND 140 // 280
 #define MOVESPERSECOND 40
 #define TICSPERFRAME 3
@@ -563,6 +567,66 @@ void gameloop_wasm(void)
     gameloop();
 }
 
+// ###################################################3
+static const char *script_file = "main.lua";
+static lua_State *gLua = NULL;
+
+static const luaL_Reg squarelib[] = {
+    // clang-format off
+    // {"log", api_log},
+    // {"start_panel", api_start_panel},
+    // {"end_panel", api_end_panel},
+    // {"button_label", api_button_label},
+    // {"layout_row", api_layout_row},
+    // {"next_state", api_next_state},
+    {NULL, NULL}
+    // clang-format on
+};
+
+lua_State *open_lua()
+{
+    lua_State *L = luaL_newstate();
+    // open all  libraries, might not be
+    // what we want
+    luaL_openlibs(L);
+
+    // We create a new table
+    lua_newtable(L);
+    // Here we set all functions from Lib array into
+    // the table on the top of the stack
+    luaL_setfuncs(L, squarelib, 0);
+    // We get the table and set as global variable
+    lua_setglobal(L, "square");
+
+    return L;
+}
+
+lua_State *load_script(const char *filename)
+{
+    lua_State *L = open_lua();
+
+    // LOG("Loading script: %s", filename);
+    if (luaL_dofile(L, filename) == LUA_OK)
+    {
+        lua_getglobal(L, "main");
+        // run the main function
+        //            pI\   /pOut
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+        {
+            // LOG("Lua loaded, but main function failed.");
+            // LOG("Error running function 'main': %s", lua_tostring(L, -1));
+        }
+        lua_pop(L, lua_gettop(L));
+    }
+    else
+    {
+        // LOG("Lua 'main' file not loaded.");
+    }
+
+    return L;
+}
+// ###################################################3
+
 int app_main(int argc, char const *const argv[])
 {
     int cmdsetup = 0, i, j, k, l, fil, waitplayers, x1, y1, x2, y2;
@@ -931,6 +995,14 @@ int app_main(int argc, char const *const argv[])
     gotlastpacketclock = 0;
     nummoves = 0;
 
+    // makes the global  lua state
+    lua_State *main_script = load_script(script_file);
+#ifdef SDL
+    current_time = SDL_GetTicks();
+#endif
+    // Some global vars because of callbacks
+    gLua = main_script;
+
     ready2send = 1;
     drawscreen(screenpeek, 65536L);
 
@@ -947,6 +1019,7 @@ int app_main(int argc, char const *const argv[])
     }
 #endif
 
+    lua_close(main_script);
     sendlogoff(); // Signing off
     musicoff();
     uninitmultiplayers();

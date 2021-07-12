@@ -54,11 +54,11 @@ AR?=ar
 RANLIB?=ranlib
 OURCFLAGS=$(debug) -g -W -Wall -Wimplicit -Wno-unused \
 	-fno-strict-aliasing -DNO_GCC_BUILTINS \
-	-DKSFORBUILD -I$(INC) -I$(SRC)
+	-DKSFORBUILD -I$(INC) -I$(SRC) -Ivendor
 OURCXXFLAGS=-fno-exceptions -fno-rtti
-GAMECFLAGS=-I$(GAME) -I$(INC)
-LIBS=
-GAMELIBS=
+GAMECFLAGS=-I$(GAME) -I$(INC) -Ivendor
+LIBS=-ldl
+GAMELIBS=vendor/lua/liblua.a
 NASMFLAGS=-s #-g
 EXESUFFIX=
 
@@ -212,14 +212,20 @@ endif
 UTILS=kextract$(EXESUFFIX) kgroup$(EXESUFFIX) transpal$(EXESUFFIX) wad2art$(EXESUFFIX) wad2map$(EXESUFFIX) arttool$(EXESUFFIX)
 BUILDUTILS=generatesdlappicon$(EXESUFFIX) bin2c$(EXESUFFIX)
 
-all: enginelib editorlib $(GAMEDATA)/game$(EXESUFFIX) $(GAMEDATA)/build$(EXESUFFIX)
+# TODO: this is meh.
+ifneq ($(PLATFORM),WASM)
+all: preflight_vendor enginelib editorlib $(GAMEDATA)/game$(EXESUFFIX) $(GAMEDATA)/build$(EXESUFFIX)
+else
+all: preflight_vendor_wasm enginelib editorlib $(GAMEDATA)/game$(EXESUFFIX) $(GAMEDATA)/build$(EXESUFFIX)
+endif
+
 utils: $(UTILS)
 enginelib: $(ENGINELIB)
 editorlib: $(EDITORLIB)
 
 $(ENGINELIB): $(ENGINEOBJS)
 	$(AR) rc $@ $^
-ifneq ($(PLATFORM),WASM) # WASM can't read the library if we do this
+ifneq ($(PLATFORM),WASM)
 	$(RANLIB) $@
 endif
 
@@ -229,7 +235,21 @@ ifneq ($(PLATFORM),WASM)
 	$(RANLIB) $@
 endif
 
-$(GAMEDATA)/game$(EXESUFFIX): $(GAMEEXEOBJS)
+####################################################
+# Lua
+preflight_vendor_wasm:
+	cd vendor/lua && $(MAKE) \
+		CC="$(CC)" \
+		AR="$(AR) rc" \
+		CFLAGS="-Wall -std=c99 -s WASM=1 -s LLD_REPORT_UNDEFINED" \
+		RANLIB=echo \
+		MYLIBS=
+
+preflight_vendor:
+	cd vendor/lua && $(MAKE)
+####################################################3
+
+$(GAMEDATA)/game$(EXESUFFIX):  $(GAMEEXEOBJS)
 	$(CXX) $(CFLAGS) $(OURCFLAGS) -o $@ $^ $(GAMELIBS) $(LIBS)
 
 $(GAMEDATA)/build$(EXESUFFIX): $(EDITOREXEOBJS)
@@ -307,6 +327,7 @@ $(TOOLS)/%.$o: $(TOOLS)/%.cc
 
 # PHONIES
 clean:
+	cd vendor/lua && $(MAKE) clean
 ifeq ($(PLATFORM),DARWIN)
 	cd xcode && xcodebuild -project engine.xcodeproj -alltargets -configuration $(style) clean
 	cd xcode && xcodebuild -project game.xcodeproj -alltargets -configuration $(style) clean
