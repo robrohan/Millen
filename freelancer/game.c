@@ -14,6 +14,7 @@
 #include "names.h"
 #include "osd.h"
 #include "pragmas.h"
+#include "math.h"
 
 #include "baselayer.h"
 
@@ -35,6 +36,10 @@
 // declared in config.c
 int loadsetup(const char *);
 int writesetup(const char *);
+
+static const char *script_file = "main.lua";
+static lua_State *gLua = NULL;
+static int callluafn(lua_State *L, const char *function);
 
 /***************************************************************************
     KEN'S TAG DEFINITIONS:      (Please define your own tags for your games)
@@ -472,6 +477,93 @@ static int osdcmd_map(const osdfuncparm_t *parm)
     return OSDCMD_OK;
 }
 
+int lasttime = 0;
+static int gamelogic(void)
+{
+    // printf("tc: %d \n", totalclock - lasttime);
+    // callluafn(gLua, "draw");
+    lua_getglobal(gLua, "draw");
+    lua_pushnumber(gLua, totalclock - lasttime); // push 1st argument
+    lua_pushnumber(gLua, totalclock);            // push 2nd argument
+    //               pI\   /pOut
+    if (lua_pcall(gLua, 2, 0, 0) != LUA_OK)
+    {
+        printf("Lua function '%s' failed. \n", "draw");
+        printf(" \\- %s \n", lua_tostring(gLua, -1));
+    }
+    lua_pop(gLua, lua_gettop(gLua));
+
+    lasttime = totalclock;
+
+    // // sectors start at 0 :)
+    // short sectnum = 1;
+    // short i = headspritesect[sectnum];
+    // while (i != -1)
+    // {
+    //     short nexti = nextspritesect[i];
+    //     spritetype *tspr = &sprite[i];
+
+    //     printf("Sprite %d is in sector %d pic: %d\n", i, sectnum, tspr->picnum);
+
+    //     i = nexti;
+    // }
+
+    // short statnum = 1; // status 1
+    // i = headspritestat[statnum];
+    // while (i != -1)
+    // {
+    //     short nexti = nextspritestat[i];
+    //     spritetype *tspr = &sprite[i];
+
+    //     printf("Sprite %d has a status of 1 (active) pic: %d\n", i, statnum, tspr->picnum);
+
+    //     i = nexti;
+    // }
+
+    // insertsprite(short sectnum, short statnum);
+    // deletesprite(short spritenum);
+    // changespritesect(short spritenum, short newsectnum);
+    // changespritestat(short spritenum, short newstatnum);
+
+    // int i; //, j = 0, k, *intptr;
+    // // point3d *ospr;
+    // spritetype *tspr;
+
+    // // It has a list of possible sprites that may be drawn on this frame
+    // // for (i = 0, tspr = &tsprite[0]; i < spritesortcnt; i++, tspr++)
+    // for (i = 0; i < spritesortcnt; i++)
+    // {
+    //     tspr = &tsprite[i];
+    //     switch (tspr->picnum)
+    //     {
+    //     case PLAYER:
+    //         break;
+    //     default:
+    //         // tspr->ang += sintable[((SDL_GetTicks()>>2)+512) & 2047];
+    //         // ---------------- sin  cos=sin+512
+    //         tspr->ang += sintable[90 & 2047];
+    //         printf("t: (%i, %i, %i) %i :: %i\n", tspr->x, tspr->y, tspr->z, tspr->ang, tspr->picnum);
+    //         printf("tag: (%i, %i) \n", tspr->hitag, tspr->lotag);
+    //         // tspr->cstat = 0;
+    //         break;
+    //     }
+    // }
+
+    // short p = playersprite[0];
+    // point3d *pts = &osprite[0];
+    // spritetype *t = &tsprite[120];
+
+    // if (pts != NULL) {
+    //     printf("pts: (%i, %i, %i)\n", pts->x, pts->y, pts->z);
+    // }
+
+    // if (t != NULL) {
+    //     printf("t: (%i, %i, %i) :: %i\n", t->x, t->y, t->z, t->picnum);
+    // }
+
+    return 0;
+}
+
 // Need to breakout the main game loop for Emscripten to be able
 // to call this via the browsers requestAnimationFrame loop
 void gameloop(void)
@@ -567,13 +659,168 @@ void gameloop_wasm(void)
     gameloop();
 }
 
-// ###################################################3
-static const char *script_file = "main.lua";
-static lua_State *gLua = NULL;
+// ###################################################
+// LUA
+static void dumpstack(lua_State *L)
+{
+    int top = lua_gettop(L);
+    for (int i = 1; i <= top; i++)
+    {
+        printf("%d\t%s\t", i, luaL_typename(L, i));
+        switch (lua_type(L, i))
+        {
+        case LUA_TNUMBER:
+            printf("%g\n", lua_tonumber(L, i));
+            break;
+        case LUA_TSTRING:
+            printf("%s\n", lua_tostring(L, i));
+            break;
+        case LUA_TBOOLEAN:
+            printf("%s\n", (lua_toboolean(L, i) ? "true" : "false"));
+            break;
+        case LUA_TNIL:
+            printf("%s\n", "nil");
+            break;
+        default:
+            printf("%p\n", lua_topointer(L, i));
+            break;
+        }
+    }
+}
+
+static int api_getsprite(lua_State *L)
+{
+    // dumpstack(L);
+    // s [id]
+    int index = luaL_checkinteger(L, 1);
+
+    spritetype *tspr = &sprite[index];
+
+    lua_createtable(L, 0, 1);
+    // s [id, {}]
+
+    // -> int x, y, z;
+    // -> short picnum;
+    // short sectnum, statnum;
+    // -> short ang, xvel, yvel, zvel;
+    // short lotag, hitag, extra;
+
+    lua_pushstring(L, "x");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->x);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    lua_pushstring(L, "y");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->y);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    lua_pushstring(L, "z");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->z);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    lua_pushstring(L, "ang");
+    // s [id, {}, key]
+    //         All angles are from 0-2047, clockwise
+    //                              deg
+    //         tspr->ang += sintable[90 & 2047];
+    // The reason I am shifting the sines right by 6 is becuase
+    // the sintable ranges from -16384 to 16384.  Dividing by
+    // 64 gives a maximum range of -256 to 256.
+    lua_pushnumber(L, tspr->ang);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    // lua_pushstring(L, "xvel");
+    // // s [id, {}, key]
+    // lua_pushnumber(L, tspr->xvel);
+    // // s [id, {}, key, val]
+    // lua_settable(L, -3);
+    // // s [id, {key=val}]
+
+    // lua_pushstring(L, "yvel");
+    // // s [id, {}, key]
+    // lua_pushnumber(L, tspr->yvel);
+    // // s [id, {}, key, val]
+    // lua_settable(L, -3);
+    // // s [id, {key=val}]
+
+    // lua_pushstring(L, "zvel");
+    // // s [id, {}, key]
+    // lua_pushnumber(L, tspr->zvel);
+    // // s [id, {}, key, val]
+    // lua_settable(L, -3);
+    // // s [id, {key=val}]
+
+    lua_pushstring(L, "picnum");
+    // s [id, {}, picnum]
+    lua_pushnumber(L, tspr->picnum);
+    // s [id, {}, picnum, 78]
+    lua_settable(L, -3);
+    // s [id, {picnum=78}]
+
+    // dumpstack(L);
+
+    return 1;
+}
+
+static int api_setsprite(lua_State *L)
+{
+    // s [spriteidx, sprite_table]
+    int idx = luaL_checkinteger(L, 1);
+    luaL_checktype(L, 2, LUA_TTABLE);
+
+    lua_getfield(L, 2, "x");
+    lua_getfield(L, 2, "y");
+    lua_getfield(L, 2, "z");
+    lua_getfield(L, 2, "ang");
+    lua_getfield(L, 2, "picnum");
+    // s [spriteidx, sprite_table, x, y, z, ang, picnum]
+
+    // dumpstack(L);
+
+    int picnum = luaL_checkinteger(L, 7);
+    int ang = luaL_checkinteger(L, 6);
+    int x = luaL_checkinteger(L, 3);
+    int y = luaL_checkinteger(L, 4);
+    int z = luaL_checkinteger(L, 5);
+
+    spritetype *tspr = &sprite[idx];
+    tspr->picnum = picnum;
+    tspr->ang = ang;
+    tspr->x = x;
+    tspr->y = y;
+    tspr->z = z;
+    tspr->xvel = (sintable[(tspr->ang + 512) & 2047] >> 6);
+    tspr->yvel = (sintable[tspr->ang & 2047] >> 6);
+
+    // printf("---> %d: %d \n", idx, picnum);
+
+    lua_pushnumber(L, 1);
+    // s [spriteidx, sprite_table, 1]
+    return 1;
+}
+
+static int api_log(lua_State *L)
+{
+    const char *test = luaL_checkstring(L, 1);
+    printf("C: %s\n", test);
+    return 0;
+}
 
 static const luaL_Reg squarelib[] = {
     // clang-format off
-    // {"log", api_log},
+    {"log", api_log},
+    {"get_sprite", api_getsprite},
+    {"set_sprite", api_setsprite},
     // {"start_panel", api_start_panel},
     // {"end_panel", api_end_panel},
     // {"button_label", api_button_label},
@@ -586,46 +833,54 @@ static const luaL_Reg squarelib[] = {
 lua_State *open_lua()
 {
     lua_State *L = luaL_newstate();
-    // open all  libraries, might not be
-    // what we want
+    // open all  libraries, might not be what we want
     luaL_openlibs(L);
 
     // We create a new table
     lua_newtable(L);
-    // Here we set all functions from Lib array into
-    // the table on the top of the stack
+    // // Here we set all functions from Lib array into
+    // // the table on the top of the stack
     luaL_setfuncs(L, squarelib, 0);
-    // We get the table and set as global variable
-    lua_setglobal(L, "square");
+    // // We get the table and set as global variable
+    lua_setglobal(L, "sq");
 
     return L;
+}
+
+static int callluafn(lua_State *L, const char *function)
+{
+    lua_getglobal(L, function);
+    // run the main function
+    //            pI\   /pOut
+    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+    {
+        printf("Lua function '%s' failed. \n", function);
+        printf(" \\- %s \n", lua_tostring(L, -1));
+    }
+    lua_pop(L, lua_gettop(L));
+
+    return 0;
 }
 
 lua_State *load_script(const char *filename)
 {
     lua_State *L = open_lua();
 
-    // LOG("Loading script: %s", filename);
+    printf("Loading script: %s \n", filename);
     if (luaL_dofile(L, filename) == LUA_OK)
     {
-        lua_getglobal(L, "main");
-        // run the main function
-        //            pI\   /pOut
-        if (lua_pcall(L, 0, 0, 0) != LUA_OK)
-        {
-            // LOG("Lua loaded, but main function failed.");
-            // LOG("Error running function 'main': %s", lua_tostring(L, -1));
-        }
-        lua_pop(L, lua_gettop(L));
+        callluafn(L, "main");
     }
     else
     {
-        // LOG("Lua 'main' file not loaded.");
+        printf("Lua 'main' file not loaded. \n");
+        printf("Error running file: %s \n", lua_tostring(L, -1));
     }
 
     return L;
 }
-// ###################################################3
+
+// ###################################################
 
 int app_main(int argc, char const *const argv[])
 {
@@ -869,10 +1124,12 @@ int app_main(int argc, char const *const argv[])
     pskybits = 1;
 
     loadpics("tiles000.art", 1048576); // Load artwork
+
     if (!qloadkvx(nextvoxid, "voxel000.kvx"))
         tiletovox[PLAYER] = nextvoxid++;
     if (!qloadkvx(nextvoxid, "voxel001.kvx"))
         tiletovox[BROWNMONSTER] = nextvoxid++;
+
     if (!loaddefinitionsfile("freelancer.def"))
         buildputs("Definitions file loaded.\n");
 
@@ -1446,6 +1703,7 @@ void drawstatusbar(short snum)
     }
 }
 
+// Load a map
 void prepareboard(char *daboardfilename)
 {
     short startwall, endwall, dasector;
@@ -2732,6 +2990,7 @@ void tagcode(void)
     }
 }
 
+// Most of the game logic is here I think.
 void statuslistcode(void)
 {
     short p, target, hitobject, daang, osectnum, movestat;
@@ -3735,7 +3994,7 @@ void bombexplode(int i)
     deletesprite((short)i);
 }
 
-// All game logic here?
+//
 void processinput(short snum)
 {
     int oldposx, oldposy, nexti;
@@ -4267,6 +4526,8 @@ void drawscreen(short snum, int dasmoothratio)
 
     setears(cposx, cposy, (int)sintable[(cang + 512) & 2047] << 14, (int)sintable[cang & 2047] << 14);
 
+    ///
+
     if (dimensionmode[myconnectindex] == 3)
     {
         int apply = 0;
@@ -4719,6 +4980,7 @@ void drawscreen(short snum, int dasmoothratio)
             drawrooms(cposx, cposy, cposz, cang, choriz, csect);
             sprite[playersprite[snum]].cstat &= ~0x8000;
             analyzesprites(cposx, cposy);
+
             drawmasks();
 
             // Finish for screen rotation
@@ -5242,9 +5504,9 @@ void domovethings(void)
     if (cameradist >= 0)
     {
         cameradist = min(cameradist + ((totalclock - cameraclock) << 10), 65536);
-        if (keystatus[0x52]) // 0
+        if (keystatus[KEY_KP0_INSERT])
             cameraang -= ((totalclock - cameraclock) << (2 + (keystatus[0x2a] | keystatus[0x36])));
-        if (keystatus[0x53]) //.
+        if (keystatus[KEY_KP_PERIOD_DELETE])
             cameraang += ((totalclock - cameraclock) << (2 + (keystatus[0x2a] | keystatus[0x36])));
         cameraclock = totalclock;
     }
@@ -5262,8 +5524,9 @@ void domovethings(void)
     }
 
     doanimations();
-    tagcode();        // Door code, moving sector code, other stuff
-    statuslistcode(); // Monster / bullet code / explosions
+    tagcode(); // Door code, moving sector code, other stuff
+    // statuslistcode(); // Monster / bullet code / explosions
+    gamelogic();
 
     fakedomovethingscorrect();
 
