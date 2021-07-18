@@ -10,6 +10,11 @@
 /src/version-auto.c
 /src/*_[fv]s.c
 
+generatesdlappicon.html
+generatesdlappicon.js
+generatesdlappicon.wasm
+
+
 /xcode/*.xcodeproj/*.mode1v3
 /xcode/*.xcodeproj/*.pbxuser
 /xcode/*.xcodeproj/project.xcworkspace
