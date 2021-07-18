@@ -25,7 +25,7 @@ function draw(dt, time)
   --   print(k, type(v), sprite[k])
   -- end
 
-  -- sprite.picnum = 49
+  sprite.picnum = 49
   sprite.ang = math.floor(last_ang)
 
   -- if _G.initial_x == -512 then
@@ -37,7 +37,7 @@ function draw(dt, time)
   -- print("--> " .. initial_x)
 
   if sprite.x <= end_x then
-    newx = sprite.x + 3
+    newx = sprite.x + 4
   else
     newx = sprite.x
   end
@@ -46,7 +46,7 @@ function draw(dt, time)
   sprite.x = newx
   local err = sq.set_sprite(sidx, sprite)
 
-  _G.last_ang = last_ang + 1
+  _G.last_ang = last_ang + 16
   if _G.last_ang >= 2048 then
     _G.last_ang = 0
   end

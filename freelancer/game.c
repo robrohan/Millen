@@ -478,6 +478,7 @@ static int osdcmd_map(const osdfuncparm_t *parm)
 }
 
 int lasttime = 0;
+// Calls Lua draw function every frame (right before render)
 static int gamelogic(void)
 {
     // printf("tc: %d \n", totalclock - lasttime);
@@ -690,7 +691,6 @@ static void dumpstack(lua_State *L)
 
 static int api_getsprite(lua_State *L)
 {
-    // dumpstack(L);
     // s [id]
     int index = luaL_checkinteger(L, 1);
 
@@ -698,12 +698,6 @@ static int api_getsprite(lua_State *L)
 
     lua_createtable(L, 0, 1);
     // s [id, {}]
-
-    // -> int x, y, z;
-    // -> short picnum;
-    // short sectnum, statnum;
-    // -> short ang, xvel, yvel, zvel;
-    // short lotag, hitag, extra;
 
     lua_pushstring(L, "x");
     // s [id, {}, key]
@@ -739,26 +733,19 @@ static int api_getsprite(lua_State *L)
     lua_settable(L, -3);
     // s [id, {key=val}]
 
-    // lua_pushstring(L, "xvel");
-    // // s [id, {}, key]
-    // lua_pushnumber(L, tspr->xvel);
-    // // s [id, {}, key, val]
-    // lua_settable(L, -3);
-    // // s [id, {key=val}]
+    lua_pushstring(L, "sectnum");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->sectnum);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
 
-    // lua_pushstring(L, "yvel");
-    // // s [id, {}, key]
-    // lua_pushnumber(L, tspr->yvel);
-    // // s [id, {}, key, val]
-    // lua_settable(L, -3);
-    // // s [id, {key=val}]
-
-    // lua_pushstring(L, "zvel");
-    // // s [id, {}, key]
-    // lua_pushnumber(L, tspr->zvel);
-    // // s [id, {}, key, val]
-    // lua_settable(L, -3);
-    // // s [id, {key=val}]
+    lua_pushstring(L, "statnum");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->statnum);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
 
     lua_pushstring(L, "picnum");
     // s [id, {}, picnum]
@@ -782,27 +769,30 @@ static int api_setsprite(lua_State *L)
     lua_getfield(L, 2, "y");
     lua_getfield(L, 2, "z");
     lua_getfield(L, 2, "ang");
+    lua_getfield(L, 2, "sectnum");
+    lua_getfield(L, 2, "statnum");
     lua_getfield(L, 2, "picnum");
-    // s [spriteidx, sprite_table, x, y, z, ang, picnum]
-
+    // s [spriteidx, sprite_table, x, y, z, ang, sectnum, statnum, picnum]
     // dumpstack(L);
 
-    int picnum = luaL_checkinteger(L, 7);
-    int ang = luaL_checkinteger(L, 6);
     int x = luaL_checkinteger(L, 3);
     int y = luaL_checkinteger(L, 4);
     int z = luaL_checkinteger(L, 5);
+    int ang = luaL_checkinteger(L, 6);
+    int sectnum = luaL_checkinteger(L, 7);
+    int statnum = luaL_checkinteger(L, 8);
+    int picnum = luaL_checkinteger(L, 9);
 
     spritetype *tspr = &sprite[idx];
-    tspr->picnum = picnum;
     tspr->ang = ang;
     tspr->x = x;
     tspr->y = y;
     tspr->z = z;
     tspr->xvel = (sintable[(tspr->ang + 512) & 2047] >> 6);
     tspr->yvel = (sintable[tspr->ang & 2047] >> 6);
-
-    // printf("---> %d: %d \n", idx, picnum);
+    tspr->sectnum = sectnum;
+    tspr->statnum = statnum;
+    tspr->picnum = picnum;
 
     lua_pushnumber(L, 1);
     // s [spriteidx, sprite_table, 1]
@@ -847,21 +837,6 @@ lua_State *open_lua()
     return L;
 }
 
-static int callluafn(lua_State *L, const char *function)
-{
-    lua_getglobal(L, function);
-    // run the main function
-    //            pI\   /pOut
-    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
-    {
-        printf("Lua function '%s' failed. \n", function);
-        printf(" \\- %s \n", lua_tostring(L, -1));
-    }
-    lua_pop(L, lua_gettop(L));
-
-    return 0;
-}
-
 lua_State *load_script(const char *filename)
 {
     lua_State *L = open_lua();
@@ -869,7 +844,15 @@ lua_State *load_script(const char *filename)
     printf("Loading script: %s \n", filename);
     if (luaL_dofile(L, filename) == LUA_OK)
     {
-        callluafn(L, "main");
+        lua_getglobal(L, "main");
+        // run the main function
+        //            pI\   /pOut
+        if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+        {
+            printf("Lua function '%s' failed. \n", "main");
+            printf(" \\- %s \n", lua_tostring(L, -1));
+        }
+        lua_pop(L, lua_gettop(L));
     }
     else
     {
