@@ -482,7 +482,6 @@ int lasttime = 0;
 static int gamelogic(void)
 {
     // printf("tc: %d \n", totalclock - lasttime);
-    // callluafn(gLua, "draw");
     lua_getglobal(gLua, "draw");
     lua_pushnumber(gLua, totalclock - lasttime); // push 1st argument
     lua_pushnumber(gLua, totalclock);            // push 2nd argument
@@ -496,39 +495,10 @@ static int gamelogic(void)
 
     lasttime = totalclock;
 
-    // // sectors start at 0 :)
-    // short sectnum = 1;
-    // short i = headspritesect[sectnum];
-    // while (i != -1)
-    // {
-    //     short nexti = nextspritesect[i];
-    //     spritetype *tspr = &sprite[i];
-
-    //     printf("Sprite %d is in sector %d pic: %d\n", i, sectnum, tspr->picnum);
-
-    //     i = nexti;
-    // }
-
-    // short statnum = 1; // status 1
-    // i = headspritestat[statnum];
-    // while (i != -1)
-    // {
-    //     short nexti = nextspritestat[i];
-    //     spritetype *tspr = &sprite[i];
-
-    //     printf("Sprite %d has a status of 1 (active) pic: %d\n", i, statnum, tspr->picnum);
-
-    //     i = nexti;
-    // }
-
     // insertsprite(short sectnum, short statnum);
     // deletesprite(short spritenum);
     // changespritesect(short spritenum, short newsectnum);
     // changespritestat(short spritenum, short newstatnum);
-
-    // int i; //, j = 0, k, *intptr;
-    // // point3d *ospr;
-    // spritetype *tspr;
 
     // // It has a list of possible sprites that may be drawn on this frame
     // // for (i = 0, tspr = &tsprite[0]; i < spritesortcnt; i++, tspr++)
@@ -747,12 +717,40 @@ static int api_getsprite(lua_State *L)
     lua_settable(L, -3);
     // s [id, {key=val}]
 
+    lua_pushstring(L, "cstat");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->cstat);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
     lua_pushstring(L, "picnum");
     // s [id, {}, picnum]
     lua_pushnumber(L, tspr->picnum);
     // s [id, {}, picnum, 78]
     lua_settable(L, -3);
     // s [id, {picnum=78}]
+
+    lua_pushstring(L, "lotag");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->lotag);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    lua_pushstring(L, "hitag");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->hitag);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
+
+    lua_pushstring(L, "extra");
+    // s [id, {}, key]
+    lua_pushnumber(L, tspr->extra);
+    // s [id, {}, key, val]
+    lua_settable(L, -3);
+    // s [id, {key=val}]
 
     // dumpstack(L);
 
@@ -771,8 +769,12 @@ static int api_setsprite(lua_State *L)
     lua_getfield(L, 2, "ang");
     lua_getfield(L, 2, "sectnum");
     lua_getfield(L, 2, "statnum");
+    lua_getfield(L, 2, "cstat");
     lua_getfield(L, 2, "picnum");
-    // s [spriteidx, sprite_table, x, y, z, ang, sectnum, statnum, picnum]
+    lua_getfield(L, 2, "lotag");
+    lua_getfield(L, 2, "hitag");
+    lua_getfield(L, 2, "extra");
+    // s [spriteidx, sprite_table, x, y, z, ang, sectnum, statnum, cstat, picnum, lotag, hitag, extra]
     // dumpstack(L);
 
     int x = luaL_checkinteger(L, 3);
@@ -781,7 +783,11 @@ static int api_setsprite(lua_State *L)
     int ang = luaL_checkinteger(L, 6);
     int sectnum = luaL_checkinteger(L, 7);
     int statnum = luaL_checkinteger(L, 8);
-    int picnum = luaL_checkinteger(L, 9);
+    int cstat = luaL_checkinteger(L, 9);
+    int picnum = luaL_checkinteger(L, 10);
+    int lotag = luaL_checkinteger(L, 11);
+    int hitag = luaL_checkinteger(L, 12);
+    int extra = luaL_checkinteger(L, 13);
 
     spritetype *tspr = &sprite[idx];
     tspr->ang = ang;
@@ -792,7 +798,11 @@ static int api_setsprite(lua_State *L)
     tspr->yvel = (sintable[tspr->ang & 2047] >> 6);
     tspr->sectnum = sectnum;
     tspr->statnum = statnum;
+    tspr->cstat = cstat;
     tspr->picnum = picnum;
+    tspr->lotag = lotag;
+    tspr->hitag = hitag;
+    tspr->extra = extra;
 
     lua_pushnumber(L, 1);
     // s [spriteidx, sprite_table, 1]
@@ -806,16 +816,115 @@ static int api_log(lua_State *L)
     return 0;
 }
 
+static int api_spriteindexstatus(lua_State *L)
+{
+    // s [idx]
+    int statnum = luaL_checkinteger(L, 1);
+
+    short i = headspritestat[statnum];
+
+    lua_pushnumber(L, i);
+    // s [idx, spriteidx]
+
+    return 1;
+}
+
+static int api_spritenextstatus(lua_State *L)
+{
+    // s [idx]
+    int statnum = luaL_checkinteger(L, 1);
+
+    short nexti = nextspritestat[statnum];
+
+    lua_pushnumber(L, nexti);
+    // s [idx, spriteidx]
+
+    return 1;
+}
+
+static int api_spriteindexsector(lua_State *L)
+{
+    // s [idx]
+    int sectnum = luaL_checkinteger(L, 1);
+
+    short i = headspritesect[sectnum];
+
+    lua_pushnumber(L, i);
+    // s [idx, spriteidx]
+
+    return 1;
+}
+
+static int api_spritenextsector(lua_State *L)
+{
+    // s [idx]
+    int sectnum = luaL_checkinteger(L, 1);
+
+    short nexti = nextspritesect[sectnum];
+
+    lua_pushnumber(L, nexti);
+    // s [idx, spriteidx]
+
+    return 1;
+}
+
+static int api_getplayer(lua_State *L)
+{
+    // s []
+    short p = playersprite[0];
+
+    lua_pushnumber(L, p);
+    // s [playerindex]
+
+    return 1;
+}
+
+static int api_getcurrentboard(lua_State *L)
+{
+    // s []
+    lua_pushstring(L, boardfilename);
+    // s [boardname]
+    return 1;
+}
+
+static int api_loadboard(lua_State *L)
+{
+    // s [name.map]
+    const char *map = luaL_checkstring(L, 1);
+
+    uninitmultiplayers();
+    uninittimer();
+    uninitinput();
+    ///
+    prepareboard((char *)map);
+    ///
+    initinput();
+    if (option[3] != 0)
+        initmouse();
+    inittimer(TIMERINTSPERSECOND);
+    for (short i = connecthead; i >= 0; i = connectpoint2[i])
+        initplayersprite((short)i);
+    // reset everything
+    waitforeverybody();
+    totalclock = ototalclock = 0;
+    gotlastpacketclock = 0;
+    nummoves = 0;
+
+    return 0;
+}
+
 static const luaL_Reg squarelib[] = {
     // clang-format off
     {"log", api_log},
     {"get_sprite", api_getsprite},
     {"set_sprite", api_setsprite},
-    // {"start_panel", api_start_panel},
-    // {"end_panel", api_end_panel},
-    // {"button_label", api_button_label},
-    // {"layout_row", api_layout_row},
-    // {"next_state", api_next_state},
+    {"index_status", api_spriteindexstatus},
+    {"next_status", api_spritenextstatus},
+    {"index_sector", api_spriteindexsector},
+    {"next_sector", api_spritenextsector},
+    {"get_player", api_getplayer},
+    {"map_name", api_getcurrentboard},
+    {"load_map", api_loadboard},
     {NULL, NULL}
     // clang-format on
 };
@@ -4130,10 +4239,12 @@ void processinput(short snum)
     if (health[snum] >= 0)
     {
         // Looking up and down
-        // if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
-        //     horiz[snum] -= TICSPERFRAME + (TICSPERFRAME >> 1); //-
-        // if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
-        //     horiz[snum] += TICSPERFRAME + (TICSPERFRAME >> 1); //+
+        // // if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 100 - (200 >> 1)))
+        // if (((ssync[snum].bits & 8) > 0) && (horiz[snum] > 0))
+        //     horiz[snum] -= TICSPERFRAME; // + (TICSPERFRAME >> 1); //-
+        // // if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 100 + (200 >> 1)))
+        // if (((ssync[snum].bits & 4) > 0) && (horiz[snum] < 200))
+        //     horiz[snum] += TICSPERFRAME; // + (TICSPERFRAME >> 1); //+
 
         if ((ssync[snum].bits & 1) > 0) // A (stand high - Jump)
         {
@@ -5506,10 +5617,11 @@ void domovethings(void)
                 checktouchsprite(i, wal->nextsector);
     }
 
+    gamelogic();
+
     doanimations();
     tagcode(); // Door code, moving sector code, other stuff
     // statuslistcode(); // Monster / bullet code / explosions
-    gamelogic();
 
     fakedomovethingscorrect();
 
@@ -5629,10 +5741,10 @@ void getinput(void)
 
     // rotate the camera about the z axis
     oscreentilt = screentilt;
-    if (keystatus[KEY_OPEN_BRACE]) // open brace
-        screentilt += ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
-    if (keystatus[KEY_CLOSE_BRACE]) // close brace
-        screentilt -= ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
+    // if (keystatus[KEY_OPEN_BRACE]) // open brace
+    //     screentilt += ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
+    // if (keystatus[KEY_CLOSE_BRACE]) // close brace
+    //     screentilt -= ((4 * TICSPERFRAME) << (keystatus[0x2a] | keystatus[0x36]));
 
     i = (TICSPERFRAME << 1);
     while ((screentilt != 0) && (i > 0))
