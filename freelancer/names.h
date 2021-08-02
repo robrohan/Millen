@@ -6,7 +6,7 @@
 #define BUILDDISK 49
 #define SWITCH2ON 66
 #define SWITCH2OFF 69
-#define ALPHABET 73
+#define ALPHABET 2555
 #define NO 74
 #define DEMOSIGN 75
 #define COIN 76

@@ -5,7 +5,8 @@
       "intelliSenseMode": "clang-x64",
       "includePath": [
         "${workspaceFolder}/include", 
-        "${workspaceFolder}/libsquish"
+        "${workspaceFolder}/libsquish",
+        "${workspaceFolder}/vendor"
       ],
       "compilerPath": "/usr/bin/clang",
       "cStandard": "c99"

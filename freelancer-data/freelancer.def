@@ -1,0 +1,17 @@
+
+#define TITLE_TEXTURE 75
+#define BUILD_DISK 49
+
+texture TITLE_TEXTURE {
+  pal 0 { file "assets/square.png" alphacut 0.1 }
+}
+
+model "models/cube.md2" 
+{
+  // note scale breaks collision :(
+  scale 15
+  zadd 1
+  shade 5
+  skin { pal 0 file "models/random.png" }
+  frame { frame "FRAME1" tile BUILD_DISK }
+}

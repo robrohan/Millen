@@ -95,18 +95,19 @@ ifeq ($(RENDERTYPE),SDL)
 
 	ifeq ($(PLATFORM),WASM)
 #	If you're feeling lazy:
-#	-s ALLOW_MEMORY_GROWTH
-#	-s MAXIMUM_MEMORY=4GB
+# -s ALLOW_MEMORY_GROWTH 
+#	-s MAXIMUM_MEMORY=4GB 
 		SDLCONFIG_CFLAGS= -Os \
 											-s WASM=1 \
-											-s TOTAL_MEMORY=20MB \
+											-s TOTAL_MEMORY=1000MB \
 											-s ASSERTIONS=1 \
 											-s USE_SDL=2 \
 											-s USE_SDL_IMAGE=2 \
 											-s MAX_WEBGL_VERSION=2 \
 											-s SDL2_IMAGE_FORMATS='["png"]' \
 											--shell-file ./assets/shell.html \
-											--preload-file "./assets@/home/web_user/.$(GAME)/"
+											--preload-file $(PRELOAD)
+#											--preload-file "./assets@/home/web_user/.$(GAME)/"
 		SDLCONFIG_LIBS= -lSDL2 -lGLESv2 
 	endif
 

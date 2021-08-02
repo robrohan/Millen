@@ -586,17 +586,20 @@ void ExtEditWallData(short wallnum) // F8
 
 void ExtEditSpriteData(short spritenum) // F8
 {
-    short nickdata;
+    short picnum;
 
     if (qsetmode == 200) // In 3D mode
     {
     }
     else
     {
-        Bsprintf((char *)tempbuf, "Sprite (%d) Nick's variable: ", spritenum);
-        nickdata = 0;
-        nickdata = getnumber16((char *)tempbuf, nickdata, 65536L, 0);
+        Bsprintf((char *)tempbuf, "Sprite (%d) Picnum: ", spritenum);
+        picnum = 0;
+        picnum = getnumber16((char *)tempbuf, picnum, 65536L, 0);
         printmessage16("");
+
+        spritetype *spt = &sprite[spritenum];
+        spt->picnum = picnum;
 
         printmessage16(""); // Clear message box (top right of status bar)
         ExtShowSpriteData(spritenum);

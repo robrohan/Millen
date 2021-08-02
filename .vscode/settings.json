@@ -9,6 +9,6 @@
     "kenbuild": true,
     "kenbuild-data": true,
     "xcode": true,
-    ".vscode": true
+    ".vscode": false
   }
 }
