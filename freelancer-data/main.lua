@@ -34,7 +34,6 @@ function draw(dt, time)
 
   local initial_x = _G.initial_x
   local end_x = _G.initial_x + 1024
-  -- print("--> " .. initial_x)
 
   if sprite.x <= end_x then
     newx = sprite.x + 4
@@ -42,7 +41,6 @@ function draw(dt, time)
     newx = sprite.x
   end
 
-  -- print(newx .. ":" .. _G.inital_x)
   sprite.x = newx
   local err = sq.set_sprite(sidx, sprite)
 

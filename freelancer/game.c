@@ -37,7 +37,7 @@
 int loadsetup(const char *);
 int writesetup(const char *);
 
-static const char *script_file = "main.lua";
+static const char *script_file = "scripts/main.lua";
 static lua_State *gLua = NULL;
 static int callluafn(lua_State *L, const char *function);
 
@@ -481,7 +481,9 @@ int lasttime = 0;
 // Calls Lua draw function every frame (right before render)
 static int gamelogic(void)
 {
-    // printf("tc: %d \n", totalclock - lasttime);
+    // const char *tempbuf = "Testing";
+    // printext((xdim >> 1) - (strlen((char *)tempbuf) << 2), ydim - 160, (char *)tempbuf, ALPHABET, 80);
+
     lua_getglobal(gLua, "draw");
     lua_pushnumber(gLua, totalclock - lasttime); // push 1st argument
     lua_pushnumber(gLua, totalclock);            // push 2nd argument
@@ -494,44 +496,6 @@ static int gamelogic(void)
     lua_pop(gLua, lua_gettop(gLua));
 
     lasttime = totalclock;
-
-    // insertsprite(short sectnum, short statnum);
-    // deletesprite(short spritenum);
-    // changespritesect(short spritenum, short newsectnum);
-    // changespritestat(short spritenum, short newstatnum);
-
-    // // It has a list of possible sprites that may be drawn on this frame
-    // // for (i = 0, tspr = &tsprite[0]; i < spritesortcnt; i++, tspr++)
-    // for (i = 0; i < spritesortcnt; i++)
-    // {
-    //     tspr = &tsprite[i];
-    //     switch (tspr->picnum)
-    //     {
-    //     case PLAYER:
-    //         break;
-    //     default:
-    //         // tspr->ang += sintable[((SDL_GetTicks()>>2)+512) & 2047];
-    //         // ---------------- sin  cos=sin+512
-    //         tspr->ang += sintable[90 & 2047];
-    //         printf("t: (%i, %i, %i) %i :: %i\n", tspr->x, tspr->y, tspr->z, tspr->ang, tspr->picnum);
-    //         printf("tag: (%i, %i) \n", tspr->hitag, tspr->lotag);
-    //         // tspr->cstat = 0;
-    //         break;
-    //     }
-    // }
-
-    // short p = playersprite[0];
-    // point3d *pts = &osprite[0];
-    // spritetype *t = &tsprite[120];
-
-    // if (pts != NULL) {
-    //     printf("pts: (%i, %i, %i)\n", pts->x, pts->y, pts->z);
-    // }
-
-    // if (t != NULL) {
-    //     printf("t: (%i, %i, %i) :: %i\n", t->x, t->y, t->z, t->picnum);
-    // }
-
     return 0;
 }
 
@@ -1072,7 +1036,7 @@ int app_main(int argc, char const *const argv[])
 
     wm_setapptitle("Freelancer");
 
-    Bstrcpy(boardfilename, "nukeland.map");
+    Bstrcpy(boardfilename, "maps/map01.map");
 
     for (i = 1; i < argc; i++)
     {
@@ -1215,7 +1179,8 @@ int app_main(int argc, char const *const argv[])
     pskyoff[1] = 0;
     pskybits = 1;
 
-    loadpics("tiles000.art", 1048576); // Load artwork
+    // loadpics("tiles000.art", 1048576); // Load artwork
+    loadpics("tiles000.art", 16281895);
 
     if (!qloadkvx(nextvoxid, "voxel000.kvx"))
         tiletovox[PLAYER] = nextvoxid++;
@@ -5617,15 +5582,14 @@ void domovethings(void)
                 checktouchsprite(i, wal->nextsector);
     }
 
+    ///////////////////////////////////////////////////////
     gamelogic();
-
     doanimations();
     tagcode(); // Door code, moving sector code, other stuff
     // statuslistcode(); // Monster / bullet code / explosions
-
     fakedomovethingscorrect();
-
     checkmasterslaveswitch();
+    ///////////////////////////////////////////////////////
 }
 
 // Mostly player movement
